@@ -17,7 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  * ***** END LICENSE BLOCK *****
  */
-package com.btactic.twofactorauth;
+package com.btactic.twofactorauth.service.admin;
 
 import static com.zimbra.common.util.TaskUtil.newDaemonThreadFactory;
 import static java.util.concurrent.Executors.newCachedThreadPool;
@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+
+import com.btactic.twofactorauth.ZetaTwoFactorAuth;
 
 import com.zimbra.common.service.ServiceException;
 import com.zimbra.common.util.ZimbraLog;
