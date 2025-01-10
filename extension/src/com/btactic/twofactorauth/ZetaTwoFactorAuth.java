@@ -48,6 +48,8 @@ import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
 import com.btactic.twofactorauth.app.ZetaAppSpecificPassword;
 import com.btactic.twofactorauth.app.ZetaAppSpecificPasswordData;
 import com.btactic.twofactorauth.app.ZetaAppSpecificPasswords;
+import com.btactic.twofactorauth.credentials.CredentialGenerator;
+import com.btactic.twofactorauth.credentials.TOTPCredentials;
 import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDevices;
 import com.btactic.twofactorauth.ZetaScratchCodes;
 import com.zimbra.cs.account.Config;
@@ -58,7 +60,6 @@ import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDeviceToken;
 import com.zimbra.cs.account.ldap.ChangePasswordListener;
 import com.zimbra.cs.account.ldap.LdapLockoutPolicy;
 import com.zimbra.cs.ldap.LdapDateUtil;
-import com.btactic.twofactorauth.CredentialGenerator;
 
 /**
  * This class is the main entry point for two-factor authentication.

@@ -17,7 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  * ***** END LICENSE BLOCK *****
  */
-package com.btactic.twofactorauth;
+package com.btactic.twofactorauth.credentials;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
