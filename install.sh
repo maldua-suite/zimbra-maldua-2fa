@@ -33,6 +33,12 @@ else
     su - zimbra -c 'cat /opt/zimbra/jetty/webapps/zimbra/js/Preferences_all.js | gzip -c > /opt/zimbra/jetty/webapps/zimbra/js/Preferences_all.js.zgz'
 fi
 
+# sendTwoFactorAuthCode workaround
+if grep -E '<c:if test="\${(tfaMethod ne param.prevTfaMethod and empty param.totpcode) || param.actionResend}">' /opt/zimbra/jetty/webapps/zimbra/public/login.jsp > /dev/null 2>&1 ; then
+    cp /opt/zimbra/jetty/webapps/zimbra/public/login.jsp /opt/zimbra/jetty/webapps/zimbra/public/login.jsp_ZETA_2FA_WORKAROUND
+    sed -i 's~<c:if test="\${(tfaMethod ne param.prevTfaMethod and empty param.totpcode) || param.actionResend}">~<c:if test="${(tfaMethod ne param.prevTfaMethod and (not empty param.prevTfaMethod) and empty param.totpcode) || param.actionResend}">~g' /opt/zimbra/jetty/webapps/zimbra/public/login.jsp
+fi
+
 }
 
 function usage () {
