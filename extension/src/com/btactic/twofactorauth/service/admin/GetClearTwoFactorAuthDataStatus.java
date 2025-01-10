@@ -17,7 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  * ***** END LICENSE BLOCK *****
  */
-package com.btactic.twofactorauth.service;
+package com.btactic.twofactorauth.service.admin;
 
 import java.util.Map;
 
