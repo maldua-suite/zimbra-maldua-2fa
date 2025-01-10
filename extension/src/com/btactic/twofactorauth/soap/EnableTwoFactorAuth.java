@@ -41,6 +41,7 @@ import com.btactic.twofactorauth.TOTPCredentials;
 import com.btactic.twofactorauth.ZetaTwoFactorAuth;
 import com.btactic.twofactorauth.ZetaScratchCodes;
 import com.zimbra.cs.service.AuthProvider;
+import com.zimbra.soap.account.message.EnableTwoFactorAuthResponse;
 import com.zimbra.soap.SoapServlet;
 import com.zimbra.soap.ZimbraSoapContext;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
