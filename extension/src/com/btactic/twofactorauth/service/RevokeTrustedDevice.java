@@ -17,37 +17,41 @@
  * If not, see <http://www.gnu.org/licenses/>.
  * ***** END LICENSE BLOCK *****
  */
-package com.btactic.twofactorauth.soap;
+package com.btactic.twofactorauth.service;
 
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.zimbra.common.service.ServiceException;
-import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.soap.Element;
+import com.zimbra.common.util.ZimbraCookie;
+import com.zimbra.common.util.ZimbraLog;
 import com.zimbra.cs.account.Account;
-import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
-import com.zimbra.cs.account.AppSpecificPassword;
-import com.btactic.twofactorauth.ZetaTwoFactorAuth;
-import com.btactic.twofactorauth.app.ZetaAppSpecificPasswords;
+import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDeviceToken;
+import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDevices;
+import com.zimbra.soap.SoapServlet;
 import com.zimbra.soap.ZimbraSoapContext;
-import com.zimbra.soap.account.message.CreateAppSpecificPasswordResponse;
+import com.zimbra.soap.account.message.RevokeTrustedDeviceResponse;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
 
-public class CreateAppSpecificPassword extends AccountDocumentHandler {
+public class RevokeTrustedDevice extends AccountDocumentHandler {
 
     @Override
     public Element handle(Element request, Map<String, Object> context) throws ServiceException {
         ZimbraSoapContext zsc = getZimbraSoapContext(context);
         Account account = getRequestedAccount(zsc);
-        String appName = request.getAttribute(AccountConstants.A_APP_NAME);
-        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account);
-        if (!manager.twoFactorAuthEnabled()) {
-            throw AuthFailedServiceException.AUTH_FAILED("two-factor authentication must be enabled");
+        RevokeTrustedDeviceResponse response = new RevokeTrustedDeviceResponse();
+        ZetaTrustedDevices trustedDevicesManager = new ZetaTrustedDevices(account);
+        ZetaTrustedDeviceToken token = ZetaTrustedDeviceToken.fromRequest(account, request, context);
+        if (token != null) {
+            trustedDevicesManager.revokeTrustedDevice(token);
+            HttpServletResponse resp = (HttpServletResponse)context.get(SoapServlet.SERVLET_RESPONSE);
+            ZimbraCookie.clearCookie(resp, ZimbraCookie.COOKIE_ZM_TRUST_TOKEN);
+        } else {
+            ZimbraLog.account.debug("No trusted device token available");
         }
-        ZetaAppSpecificPasswords appManager = new ZetaAppSpecificPasswords(account);
-        AppSpecificPassword password = appManager.generatePassword(appName);
-        CreateAppSpecificPasswordResponse response = new CreateAppSpecificPasswordResponse();
-        response.setPassword(password.getPassword());
         return zsc.jaxbToElement(response);
     }
+
 }

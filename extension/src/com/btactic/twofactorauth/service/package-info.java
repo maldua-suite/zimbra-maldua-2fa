@@ -26,7 +26,7 @@
 )
 @XmlAccessorType(XmlAccessType.NONE)
 
-package com.btactic.twofactorauth.soap;
+package com.btactic.twofactorauth.service;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

@@ -17,33 +17,37 @@
  * If not, see <http://www.gnu.org/licenses/>.
  * ***** END LICENSE BLOCK *****
  */
-package com.btactic.twofactorauth.soap;
+package com.btactic.twofactorauth.service;
 
-import java.util.List;
 import java.util.Map;
 
 import com.zimbra.common.service.ServiceException;
+import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.soap.Element;
 import com.zimbra.cs.account.Account;
-import com.btactic.twofactorauth.ZetaScratchCodes;
+import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
+import com.zimbra.cs.account.AppSpecificPassword;
+import com.btactic.twofactorauth.ZetaTwoFactorAuth;
+import com.btactic.twofactorauth.app.ZetaAppSpecificPasswords;
 import com.zimbra.soap.ZimbraSoapContext;
-import com.zimbra.soap.account.message.GetScratchCodesResponse;
+import com.zimbra.soap.account.message.CreateAppSpecificPasswordResponse;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
 
-public class GetScratchCodes extends AccountDocumentHandler {
+public class CreateAppSpecificPassword extends AccountDocumentHandler {
 
     @Override
     public Element handle(Element request, Map<String, Object> context) throws ServiceException {
         ZimbraSoapContext zsc = getZimbraSoapContext(context);
         Account account = getRequestedAccount(zsc);
-        ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
-        if (!scratchCodesManager.twoFactorAuthEnabled()) {
-            throw ServiceException.FAILURE("two-factor authentication is not enabled", null);
+        String appName = request.getAttribute(AccountConstants.A_APP_NAME);
+        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account);
+        if (!manager.twoFactorAuthEnabled()) {
+            throw AuthFailedServiceException.AUTH_FAILED("two-factor authentication must be enabled");
         }
-        List<String> scratchCodes = scratchCodesManager.getCodes();
-        GetScratchCodesResponse response = new GetScratchCodesResponse();
-        response.setScratchCodes(scratchCodes);
+        ZetaAppSpecificPasswords appManager = new ZetaAppSpecificPasswords(account);
+        AppSpecificPassword password = appManager.generatePassword(appName);
+        CreateAppSpecificPasswordResponse response = new CreateAppSpecificPasswordResponse();
+        response.setPassword(password.getPassword());
         return zsc.jaxbToElement(response);
     }
-
 }

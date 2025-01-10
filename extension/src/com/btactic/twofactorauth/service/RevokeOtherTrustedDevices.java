@@ -17,32 +17,30 @@
  * If not, see <http://www.gnu.org/licenses/>.
  * ***** END LICENSE BLOCK *****
  */
-package com.btactic.twofactorauth.soap;
+package com.btactic.twofactorauth.service;
 
-import java.util.List;
 import java.util.Map;
 
 import com.zimbra.common.service.ServiceException;
 import com.zimbra.common.soap.Element;
 import com.zimbra.cs.account.Account;
-import com.btactic.twofactorauth.ZetaScratchCodes;
+import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDeviceToken;
+import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDevices;
 import com.zimbra.soap.ZimbraSoapContext;
-import com.zimbra.soap.account.message.GenerateScratchCodesResponse;
+import com.zimbra.soap.account.message.RevokeOtherTrustedDevicesResponse;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
 
-public class GenerateScratchCodes extends AccountDocumentHandler {
+public class RevokeOtherTrustedDevices extends AccountDocumentHandler {
 
     @Override
     public Element handle(Element request, Map<String, Object> context) throws ServiceException {
         ZimbraSoapContext zsc = getZimbraSoapContext(context);
         Account account = getRequestedAccount(zsc);
-        ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
-        if (!scratchCodesManager.twoFactorAuthEnabled()) {
-            throw ServiceException.FAILURE("two-factor authentication is not enabled", new Throwable());
-        }
-        List<String> scratchCodes = scratchCodesManager.generateNewScratchCodes();
-        GenerateScratchCodesResponse response = new GenerateScratchCodesResponse();
-        response.setScratchCodes(scratchCodes);
+        RevokeOtherTrustedDevicesResponse response = new RevokeOtherTrustedDevicesResponse();
+        ZetaTrustedDevices trustedDevicesManager = new ZetaTrustedDevices(account);
+        ZetaTrustedDeviceToken token = ZetaTrustedDeviceToken.fromRequest(account, request, context);
+        trustedDevicesManager.revokeOtherTrustedDevices(token);
         return zsc.jaxbToElement(response);
     }
+
 }
