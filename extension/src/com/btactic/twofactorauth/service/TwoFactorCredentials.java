@@ -19,7 +19,7 @@
  *
  * ***** END LICENSE BLOCK *****
  */
-package com.btactic.twofactorauth.soap;
+package com.btactic.twofactorauth.service;
 
 import java.util.List;
 

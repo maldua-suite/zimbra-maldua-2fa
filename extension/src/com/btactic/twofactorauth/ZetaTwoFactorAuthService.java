@@ -10,16 +10,16 @@ import com.zimbra.cs.service.account.AccountService;
 
 import com.zimbra.common.soap.AccountConstants;
 
-import com.btactic.twofactorauth.soap.EnableTwoFactorAuth;
-import com.btactic.twofactorauth.soap.DisableTwoFactorAuth;
-import com.btactic.twofactorauth.soap.CreateAppSpecificPassword;
-import com.btactic.twofactorauth.soap.RevokeAppSpecificPassword;
-import com.btactic.twofactorauth.soap.GetAppSpecificPasswords;
-import com.btactic.twofactorauth.soap.GetScratchCodes;
-import com.btactic.twofactorauth.soap.GenerateScratchCodes;
-import com.btactic.twofactorauth.soap.GetTrustedDevices;
-import com.btactic.twofactorauth.soap.RevokeTrustedDevice;
-import com.btactic.twofactorauth.soap.RevokeOtherTrustedDevices;
+import com.btactic.twofactorauth.service.EnableTwoFactorAuth;
+import com.btactic.twofactorauth.service.DisableTwoFactorAuth;
+import com.btactic.twofactorauth.service.CreateAppSpecificPassword;
+import com.btactic.twofactorauth.service.RevokeAppSpecificPassword;
+import com.btactic.twofactorauth.service.GetAppSpecificPasswords;
+import com.btactic.twofactorauth.service.GetScratchCodes;
+import com.btactic.twofactorauth.service.GenerateScratchCodes;
+import com.btactic.twofactorauth.service.GetTrustedDevices;
+import com.btactic.twofactorauth.service.RevokeTrustedDevice;
+import com.btactic.twofactorauth.service.RevokeOtherTrustedDevices;
 
 public class ZetaTwoFactorAuthService extends AccountService implements DocumentService {
 

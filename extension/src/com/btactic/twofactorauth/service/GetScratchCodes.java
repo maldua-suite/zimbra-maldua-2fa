@@ -17,31 +17,33 @@
  * If not, see <http://www.gnu.org/licenses/>.
  * ***** END LICENSE BLOCK *****
  */
-package com.btactic.twofactorauth.soap;
+package com.btactic.twofactorauth.service;
 
+import java.util.List;
 import java.util.Map;
 
 import com.zimbra.common.service.ServiceException;
-import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.soap.Element;
 import com.zimbra.cs.account.Account;
-import com.btactic.twofactorauth.ZetaTwoFactorAuth;
-import com.btactic.twofactorauth.app.ZetaAppSpecificPasswords;
+import com.btactic.twofactorauth.ZetaScratchCodes;
 import com.zimbra.soap.ZimbraSoapContext;
-import com.zimbra.soap.account.message.RevokeAppSpecificPasswordResponse;
+import com.zimbra.soap.account.message.GetScratchCodesResponse;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
 
-public class RevokeAppSpecificPassword extends AccountDocumentHandler {
+public class GetScratchCodes extends AccountDocumentHandler {
 
-	@Override
-	public Element handle(Element request, Map<String, Object> context)
-			throws ServiceException {
-		ZimbraSoapContext zsc = getZimbraSoapContext(context);
+    @Override
+    public Element handle(Element request, Map<String, Object> context) throws ServiceException {
+        ZimbraSoapContext zsc = getZimbraSoapContext(context);
         Account account = getRequestedAccount(zsc);
-        RevokeAppSpecificPasswordResponse response = new RevokeAppSpecificPasswordResponse();
-        ZetaAppSpecificPasswords appSpecificPasswordsManager = new ZetaAppSpecificPasswords(account);
-        String appName = request.getAttribute(AccountConstants.A_APP_NAME);
-        appSpecificPasswordsManager.revoke(appName);
+        ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
+        if (!scratchCodesManager.twoFactorAuthEnabled()) {
+            throw ServiceException.FAILURE("two-factor authentication is not enabled", null);
+        }
+        List<String> scratchCodes = scratchCodesManager.getCodes();
+        GetScratchCodesResponse response = new GetScratchCodesResponse();
+        response.setScratchCodes(scratchCodes);
         return zsc.jaxbToElement(response);
-	}
+    }
+
 }
