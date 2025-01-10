@@ -24,6 +24,7 @@ import java.util.Map;
 import com.zimbra.common.service.ServiceException;
 import com.zimbra.common.soap.Element;
 import com.zimbra.cs.account.Account;
+import com.zimbra.soap.account.message.DisableTwoFactorAuthResponse;
 import com.btactic.twofactorauth.ZetaTwoFactorAuth;
 import com.btactic.twofactorauth.app.ZetaAppSpecificPasswords;
 import com.zimbra.soap.ZimbraSoapContext;
