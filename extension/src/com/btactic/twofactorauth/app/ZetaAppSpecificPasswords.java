@@ -55,8 +55,6 @@ import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDeviceToken;
 import com.zimbra.cs.account.ldap.ChangePasswordListener;
 import com.zimbra.cs.account.ldap.LdapLockoutPolicy;
 import com.zimbra.cs.ldap.LdapDateUtil;
-import com.btactic.twofactorauth.credentials.CredentialGenerator;
-import com.btactic.twofactorauth.TOTPCredentials;
 
 /**
  * This class is the main entry point for two-factor authentication.
