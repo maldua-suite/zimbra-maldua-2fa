@@ -26,8 +26,6 @@ import com.zimbra.common.soap.Element;
 import com.zimbra.cs.account.AccountServiceException;
 import com.zimbra.cs.account.Cos;
 import com.zimbra.cs.account.Provisioning;
-import com.btactic.twofactorauth.ClearTwoFactorAuthDataTask;
-import com.btactic.twofactorauth.ClearTwoFactorAuthDataTask.TaskStatus;
 import com.zimbra.soap.JaxbUtil;
 import com.zimbra.soap.ZimbraSoapContext;
 import com.zimbra.soap.admin.message.GetClearTwoFactorAuthDataStatusRequest;
@@ -55,7 +53,7 @@ public class GetClearTwoFactorAuthDataStatus extends AdminDocumentHandler {
             throw AccountServiceException.NO_SUCH_COS(cosSelector.getKey());
         } else {
             ClearTwoFactorAuthDataTask clearDataTask = ClearTwoFactorAuthDataTask.getInstance();
-            TaskStatus status = clearDataTask.getCosTaskStatus(cos.getId());
+            ClearTwoFactorAuthDataTask.TaskStatus status = clearDataTask.getCosTaskStatus(cos.getId());
             resp.setStatus(status.toString());
             return zsc.jaxbToElement(resp);
         }
