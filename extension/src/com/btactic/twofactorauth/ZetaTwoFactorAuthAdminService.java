@@ -10,8 +10,8 @@ import com.zimbra.cs.service.admin.AdminService;
 
 import com.zimbra.common.soap.AdminConstants;
 
-import com.btactic.twofactorauth.service.ClearTwoFactorAuthData;
-import com.btactic.twofactorauth.service.GetClearTwoFactorAuthDataStatus;
+import com.btactic.twofactorauth.service.admin.ClearTwoFactorAuthData;
+import com.btactic.twofactorauth.service.admin.GetClearTwoFactorAuthDataStatus;
 
 public class ZetaTwoFactorAuthAdminService extends AdminService implements DocumentService {
 
