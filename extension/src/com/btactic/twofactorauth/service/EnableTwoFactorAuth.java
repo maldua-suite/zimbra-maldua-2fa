@@ -41,7 +41,11 @@ import com.btactic.twofactorauth.credentials.TOTPCredentials;
 import com.btactic.twofactorauth.ZetaTwoFactorAuth;
 import com.btactic.twofactorauth.ZetaScratchCodes;
 import com.zimbra.cs.service.AuthProvider;
+import com.zimbra.cs.service.mail.SetRecoveryAccount;
 import com.zimbra.soap.account.message.EnableTwoFactorAuthResponse;
+import com.zimbra.soap.mail.message.SetRecoveryAccountRequest;
+import com.zimbra.soap.type.Channel;
+import com.zimbra.soap.JaxbUtil;
 import com.zimbra.soap.SoapServlet;
 import com.zimbra.soap.ZimbraSoapContext;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
@@ -55,87 +59,22 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
     @Override
     public Element handle(Element request, Map<String, Object> context)
             throws ServiceException {
-        Provisioning prov = Provisioning.getInstance();
-        ZimbraSoapContext zsc = getZimbraSoapContext(context);
-        String acctNamePassedIn = request.getElement(AccountConstants.E_NAME).getText();
-        Account account = prov.get(AccountBy.name, acctNamePassedIn);
-        if (account == null) {
-            throw AuthFailedServiceException.AUTH_FAILED("no such account");
+        Element methodEl = request.getOptionalElement(AccountConstants.E_METHOD);
+        String method = null;
+        if (methodEl != null) {
+            method = methodEl.getText();
         }
-        if (!account.isFeatureTwoFactorAuthAvailable()) {
-            throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
-        }
-        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account, acctNamePassedIn);
-        EnableTwoFactorAuthResponse response = new EnableTwoFactorAuthResponse();
-        Element passwordEl = request.getOptionalElement(AccountConstants.E_PASSWORD);
-        String password = null;
-        if (passwordEl != null) {
-            password = passwordEl.getText();
-        }
-        Element twoFactorCode = request.getOptionalElement(AccountConstants.E_TWO_FACTOR_CODE);
-        if (twoFactorCode == null) {
-            account.authAccount(password, Protocol.soap);
-            if (account.isTwoFactorAuthEnabled()) {
-                encodeAlreadyEnabled(response);
-            } else {
-                TOTPCredentials newCredentials = manager.generateCredentials();
-                response.setSecret(newCredentials.getSecret());
-                try {
-                String token = AuthProvider.getAuthToken(account, Usage.ENABLE_TWO_FACTOR_AUTH).getEncoded();
-                com.zimbra.soap.account.type.AuthToken at = new com.zimbra.soap.account.type.AuthToken(token, false);
-                response.setAuthToken(at);
-                } catch (AuthTokenException e) {
-                    throw ServiceException.FAILURE("cannot generate auth token", e);
-                }
-            }
-        } else {
-            Element authTokenEl = request.getOptionalElement(AccountConstants.E_AUTH_TOKEN);
-            if (authTokenEl != null) {
-                AuthToken at;
-                try {
-                    at = AuthProvider.getAuthToken(authTokenEl, account);
-                } catch (AuthTokenException e) {
-                    throw AuthFailedServiceException.AUTH_FAILED("invalid auth token");
-                } try {
-                    Account authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.ENABLE_TWO_FACTOR_AUTH);
-                    boolean verifyAccount = authTokenEl.getAttributeBool(AccountConstants.A_VERIFY_ACCOUNT, false);
-                    if (verifyAccount && !authTokenAcct.getId().equalsIgnoreCase(account.getId())) {
-                        throw AuthFailedServiceException.AUTH_FAILED("auth token doesn't match the named account");
-                    }
-                } finally {
-                    if (at != null) {
-                        try {
-                            at.deRegister();
-                        } catch (AuthTokenException e) {
-                            ZimbraLog.account.warn("could not de-register two-factor authentication auth token");
-                        }
-                    }
-                }
-            } else if (password != null) {
-                account.authAccount(password, Protocol.soap);
-            } else {
-                throw AuthFailedServiceException.AUTH_FAILED("auth token and password missing");
-            }
-            manager.authenticateTOTP(twoFactorCode.getText());
-            manager.enableTwoFactorAuth();
-            ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
-            response.setScratchCodes(scratchCodesManager.getCodes());
-            int tokenValidityValue = account.getAuthTokenValidityValue();
-            account.setAuthTokenValidityValue(tokenValidityValue == Integer.MAX_VALUE ? 0 : tokenValidityValue + 1);
-            HttpServletRequest httpReq = (HttpServletRequest)context.get(SoapServlet.SERVLET_REQUEST);
-            HttpServletResponse httpResp = (HttpServletResponse)context.get(SoapServlet.SERVLET_RESPONSE);
-            try {
-                AuthToken at = AuthProvider.getAuthToken(account);
-                response.setAuthToken(new com.zimbra.soap.account.type.AuthToken(at.getEncoded(), false));
-                at.encode(httpResp, false, ZimbraCookie.secureCookie(httpReq), false);
-            } catch (AuthTokenException e) {
-                throw ServiceException.FAILURE("cannot generate auth token", e);
-            }
-        }
-        return zsc.jaxbToElement(response);
-    }
 
-    private void encodeAlreadyEnabled(EnableTwoFactorAuthResponse response) {}
+        if (method.equals(AccountConstants.E_TWO_FACTOR_METHOD_APP)) {
+            TwoFactorAuthMethod twoFactorAuthMethod = new TwoFactorAuthMethod();
+            return twoFactorAuthMethod.handle(request, context);
+        } else if (method.equals(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL)) {
+            SendEmailMethod sendEmailMethod = new SendEmailMethod();
+            return sendEmailMethod.handle(request, context);
+        }
+
+        throw AuthFailedServiceException.AUTH_FAILED("Unsupported 2FA method");
+    }
 
     @Override
     public boolean needsAuth(Map<String, Object> context) {
