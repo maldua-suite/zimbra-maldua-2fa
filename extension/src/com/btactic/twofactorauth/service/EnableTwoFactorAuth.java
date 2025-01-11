@@ -55,7 +55,19 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
     @Override
     public Element handle(Element request, Map<String, Object> context)
             throws ServiceException {
-        return handleApp(request, context);
+        Element methodEl = request.getOptionalElement(AccountConstants.E_METHOD);
+        String method = null;
+        if (methodEl != null) {
+            method = methodEl.getText();
+        }
+
+        if (method.equals(AccountConstants.E_TWO_FACTOR_METHOD_APP)) {
+            return handleApp(request, context);
+        } else if (method.equals(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL)) {
+            throw AuthFailedServiceException.AUTH_FAILED("Email 2FA method not supported yet.");
+        }
+
+        throw AuthFailedServiceException.AUTH_FAILED("Unsupported 2FA method");
     }
 
     private Element handleApp(Element request, Map<String, Object> context)
