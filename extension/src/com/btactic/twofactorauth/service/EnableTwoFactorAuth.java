@@ -55,6 +55,11 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
     @Override
     public Element handle(Element request, Map<String, Object> context)
             throws ServiceException {
+        return handleApp(request, context);
+    }
+
+    private Element handleApp(Element request, Map<String, Object> context)
+            throws ServiceException {
         Provisioning prov = Provisioning.getInstance();
         ZimbraSoapContext zsc = getZimbraSoapContext(context);
         String acctNamePassedIn = request.getElement(AccountConstants.E_NAME).getText();
