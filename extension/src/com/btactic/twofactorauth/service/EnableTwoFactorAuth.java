@@ -176,9 +176,9 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
 
         SetRecoveryAccountRequest setRecoveryAccountRequest = new SetRecoveryAccountRequest();
         setRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.sendCode);
-        setRecoveryAccountRequest.setAttribute("isFromEnableTwoFactorAuth", "true");
         setRecoveryAccountRequest.setRecoveryAccount(email);
         Element req = JaxbUtil.jaxbToElement(setRecoveryAccountRequest);
+        req.setAttribute("isFromEnableTwoFactorAuth", "true");
 
         try {
             // TODO: Check if reusing context here is a good idea or if we should create a new one
