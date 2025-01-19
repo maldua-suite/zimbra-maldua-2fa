@@ -187,6 +187,16 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
             throw ServiceException.FAILURE("Cannot set the Recovery Account", e)
         }
 
+        HttpServletRequest httpReq = (HttpServletRequest)context.get(SoapServlet.SERVLET_REQUEST);
+        HttpServletResponse httpResp = (HttpServletResponse)context.get(SoapServlet.SERVLET_RESPONSE);
+        try {
+            AuthToken at = AuthProvider.getAuthToken(account);
+            response.setAuthToken(new com.zimbra.soap.account.type.AuthToken(at.getEncoded(), false));
+            at.encode(httpResp, false, ZimbraCookie.secureCookie(httpReq), false);
+        } catch (AuthTokenException e) {
+            throw ServiceException.FAILURE("cannot generate auth token", e);
+        }
+
 /*
         ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account, acctNamePassedIn);
         EnableTwoFactorAuthResponse response = new EnableTwoFactorAuthResponse();
