@@ -44,6 +44,7 @@ import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.cs.service.mail.SetRecoveryAccount;
 import com.zimbra.soap.account.message.EnableTwoFactorAuthResponse;
 import com.zimbra.soap.mail.message.SetRecoveryAccountRequest;
+import com.zimbra.soap.JaxbUtil;
 import com.zimbra.soap.SoapServlet;
 import com.zimbra.soap.ZimbraSoapContext;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
@@ -187,6 +188,7 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
             throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
         }
 
+        EnableTwoFactorAuthResponse response = new EnableTwoFactorAuthResponse();
         HttpServletRequest httpReq = (HttpServletRequest)context.get(SoapServlet.SERVLET_REQUEST);
         HttpServletResponse httpResp = (HttpServletResponse)context.get(SoapServlet.SERVLET_RESPONSE);
         try {
