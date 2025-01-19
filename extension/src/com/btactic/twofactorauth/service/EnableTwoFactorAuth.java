@@ -175,6 +175,22 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
             email = emailEl.getText();
         }
 
+        // Reset - To avoid problems when sending the code again - BEGIN
+        SetRecoveryAccountRequest setRecoveryAccountRequest = new SetRecoveryAccountRequest();
+        setRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.reset);
+        setRecoveryAccountRequest.setChannel(Channel.EMAIL);
+        Element req = JaxbUtil.jaxbToElement(setRecoveryAccountRequest);
+        req.addAttribute("isFromEnableTwoFactorAuth", true);
+
+        try {
+            // TODO: Check if reusing context here is a good idea or if we should create a new one
+            new SetRecoveryAccount().handle(req, context);
+        } catch (ServiceException e) {
+            throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
+        }
+        // Reset - To avoid problems when sending the code again - END
+
+        // SendCode - BEGIN
         SetRecoveryAccountRequest setRecoveryAccountRequest = new SetRecoveryAccountRequest();
         setRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.sendCode);
         setRecoveryAccountRequest.setRecoveryAccount(email);
@@ -188,6 +204,7 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
         } catch (ServiceException e) {
             throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
         }
+        // SendCode - END
 
         EnableTwoFactorAuthResponse response = new EnableTwoFactorAuthResponse();
         HttpServletRequest httpReq = (HttpServletRequest)context.get(SoapServlet.SERVLET_REQUEST);
