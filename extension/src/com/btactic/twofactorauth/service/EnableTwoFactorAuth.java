@@ -176,15 +176,15 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
         }
 
         // Reset - To avoid problems when sending the code again - BEGIN
-        SetRecoveryAccountRequest setRecoveryAccountRequest = new SetRecoveryAccountRequest();
-        setRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.reset);
-        setRecoveryAccountRequest.setChannel(Channel.EMAIL);
-        Element req = JaxbUtil.jaxbToElement(setRecoveryAccountRequest);
-        req.addAttribute("isFromEnableTwoFactorAuth", true);
+        SetRecoveryAccountRequest resetRecoveryAccountRequest = new SetRecoveryAccountRequest();
+        resetRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.reset);
+        resetRecoveryAccountRequest.setChannel(Channel.EMAIL);
+        Element resetReq = JaxbUtil.jaxbToElement(resetRecoveryAccountRequest);
+        resetReq.addAttribute("isFromEnableTwoFactorAuth", true);
 
         try {
             // TODO: Check if reusing context here is a good idea or if we should create a new one
-            new SetRecoveryAccount().handle(req, context);
+            new SetRecoveryAccount().handle(resetReq, context);
         } catch (ServiceException e) {
             throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
         }
@@ -195,12 +195,12 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
         setRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.sendCode);
         setRecoveryAccountRequest.setRecoveryAccount(email);
         setRecoveryAccountRequest.setChannel(Channel.EMAIL);
-        Element req = JaxbUtil.jaxbToElement(setRecoveryAccountRequest);
-        req.addAttribute("isFromEnableTwoFactorAuth", true);
+        Element setReq = JaxbUtil.jaxbToElement(setRecoveryAccountRequest);
+        setReq.addAttribute("isFromEnableTwoFactorAuth", true);
 
         try {
             // TODO: Check if reusing context here is a good idea or if we should create a new one
-            new SetRecoveryAccount().handle(req, context);
+            new SetRecoveryAccount().handle(setReq, context);
         } catch (ServiceException e) {
             throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
         }
