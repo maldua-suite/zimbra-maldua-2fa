@@ -44,6 +44,7 @@ import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.cs.service.mail.SetRecoveryAccount;
 import com.zimbra.soap.account.message.EnableTwoFactorAuthResponse;
 import com.zimbra.soap.mail.message.SetRecoveryAccountRequest;
+import com.zimbra.soap.type.Channel;
 import com.zimbra.soap.JaxbUtil;
 import com.zimbra.soap.SoapServlet;
 import com.zimbra.soap.ZimbraSoapContext;
@@ -177,6 +178,7 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
         SetRecoveryAccountRequest setRecoveryAccountRequest = new SetRecoveryAccountRequest();
         setRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.sendCode);
         setRecoveryAccountRequest.setRecoveryAccount(email);
+        setRecoveryAccountRequest.setChannel(Channel.EMAIL);
         Element req = JaxbUtil.jaxbToElement(setRecoveryAccountRequest);
         req.addAttribute("isFromEnableTwoFactorAuth", true);
 
