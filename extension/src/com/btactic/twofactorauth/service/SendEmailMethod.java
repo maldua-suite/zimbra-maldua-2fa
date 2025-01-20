@@ -69,20 +69,7 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
             email = emailEl.getText();
         }
 
-        // Reset - To avoid problems when sending the code again - BEGIN
-        SetRecoveryAccountRequest resetRecoveryAccountRequest = new SetRecoveryAccountRequest();
-        resetRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.reset);
-        resetRecoveryAccountRequest.setChannel(Channel.EMAIL);
-        Element resetReq = JaxbUtil.jaxbToElement(resetRecoveryAccountRequest);
-        resetReq.addAttribute("isFromEnableTwoFactorAuth", true);
-
-        try {
-            // TODO: Check if reusing context here is a good idea or if we should create a new one
-            new SetRecoveryAccount().handle(resetReq, context);
-        } catch (ServiceException e) {
-            throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
-        }
-        // Reset - To avoid problems when sending the code again - END
+        resetCode(context);
 
         // SendCode - BEGIN
         SetRecoveryAccountRequest setRecoveryAccountRequest = new SetRecoveryAccountRequest();
@@ -118,4 +105,20 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
     public boolean needsAuth(Map<String, Object> context) {
         return false;
     }
+
+    private void resetCode(Map<String, Object> context) throws ServiceException {
+        SetRecoveryAccountRequest resetRecoveryAccountRequest = new SetRecoveryAccountRequest();
+        resetRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.reset);
+        resetRecoveryAccountRequest.setChannel(Channel.EMAIL);
+        Element resetReq = JaxbUtil.jaxbToElement(resetRecoveryAccountRequest);
+        resetReq.addAttribute("isFromEnableTwoFactorAuth", true);
+
+        try {
+            // TODO: Check if reusing context here is a good idea or if we should create a new one
+            new SetRecoveryAccount().handle(resetReq, context);
+        } catch (ServiceException e) {
+            throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
+        }
+    }
+
 }
