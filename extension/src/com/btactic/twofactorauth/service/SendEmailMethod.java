@@ -29,17 +29,11 @@ import com.zimbra.common.service.ServiceException;
 import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.soap.Element;
 import com.zimbra.common.util.ZimbraCookie;
-import com.zimbra.common.util.ZimbraLog;
 import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
 import com.zimbra.cs.account.AuthToken;
-import com.zimbra.cs.account.AuthToken.Usage;
 import com.zimbra.cs.account.AuthTokenException;
 import com.zimbra.cs.account.Provisioning;
-import com.zimbra.cs.account.auth.AuthContext.Protocol;
-import com.btactic.twofactorauth.credentials.TOTPCredentials;
-import com.btactic.twofactorauth.ZetaTwoFactorAuth;
-import com.btactic.twofactorauth.ZetaScratchCodes;
 import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.cs.service.mail.SetRecoveryAccount;
 import com.zimbra.soap.account.message.EnableTwoFactorAuthResponse;
@@ -48,35 +42,15 @@ import com.zimbra.soap.type.Channel;
 import com.zimbra.soap.JaxbUtil;
 import com.zimbra.soap.SoapServlet;
 import com.zimbra.soap.ZimbraSoapContext;
-import com.zimbra.cs.service.account.AccountDocumentHandler;
 
 /** SOAP handler to enable two-factor auth.
  * @author iraykin
  *
  */
-public class EnableTwoFactorAuth extends AccountDocumentHandler {
+public class SendEmailMethod extends EnableTwoFactorAuth {
 
     @Override
     public Element handle(Element request, Map<String, Object> context)
-            throws ServiceException {
-        Element methodEl = request.getOptionalElement(AccountConstants.E_METHOD);
-        String method = null;
-        if (methodEl != null) {
-            method = methodEl.getText();
-        }
-
-        if (method.equals(AccountConstants.E_TWO_FACTOR_METHOD_APP)) {
-            TwoFactorAuthMethod twoFactorAuthMethod = new TwoFactorAuthMethod();
-            return twoFactorAuthMethod.handle(request, context);
-        } else if (method.equals(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL)) {
-            SendEmailMethod sendEmailMethod = new SendEmailMethod();
-            return sendEmailMethod.handle(request, context);
-        }
-
-        throw AuthFailedServiceException.AUTH_FAILED("Unsupported 2FA method");
-    }
-
-    private Element handleEmail(Element request, Map<String, Object> context)
             throws ServiceException {
         Provisioning prov = Provisioning.getInstance();
         ZimbraSoapContext zsc = getZimbraSoapContext(context);
