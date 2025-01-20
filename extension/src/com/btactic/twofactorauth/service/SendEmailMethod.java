@@ -70,22 +70,7 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
         }
 
         resetCode(context);
-
-        // SendCode - BEGIN
-        SetRecoveryAccountRequest setRecoveryAccountRequest = new SetRecoveryAccountRequest();
-        setRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.sendCode);
-        setRecoveryAccountRequest.setRecoveryAccount(email);
-        setRecoveryAccountRequest.setChannel(Channel.EMAIL);
-        Element setReq = JaxbUtil.jaxbToElement(setRecoveryAccountRequest);
-        setReq.addAttribute("isFromEnableTwoFactorAuth", true);
-
-        try {
-            // TODO: Check if reusing context here is a good idea or if we should create a new one
-            new SetRecoveryAccount().handle(setReq, context);
-        } catch (ServiceException e) {
-            throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
-        }
-        // SendCode - END
+        sendCode(email,context);
 
         EnableTwoFactorAuthResponse response = new EnableTwoFactorAuthResponse();
         HttpServletRequest httpReq = (HttpServletRequest)context.get(SoapServlet.SERVLET_REQUEST);
@@ -116,6 +101,22 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
         try {
             // TODO: Check if reusing context here is a good idea or if we should create a new one
             new SetRecoveryAccount().handle(resetReq, context);
+        } catch (ServiceException e) {
+            throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
+        }
+    }
+
+    private void sendCode(String email, Map<String, Object> context) throws ServiceException {
+        SetRecoveryAccountRequest setRecoveryAccountRequest = new SetRecoveryAccountRequest();
+        setRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.sendCode);
+        setRecoveryAccountRequest.setRecoveryAccount(email);
+        setRecoveryAccountRequest.setChannel(Channel.EMAIL);
+        Element setReq = JaxbUtil.jaxbToElement(setRecoveryAccountRequest);
+        setReq.addAttribute("isFromEnableTwoFactorAuth", true);
+
+        try {
+            // TODO: Check if reusing context here is a good idea or if we should create a new one
+            new SetRecoveryAccount().handle(setReq, context);
         } catch (ServiceException e) {
             throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
         }
