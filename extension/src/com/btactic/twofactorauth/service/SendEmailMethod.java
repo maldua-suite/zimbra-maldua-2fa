@@ -114,7 +114,7 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
             // TODO: Check if reusing context here is a good idea or if we should create a new one
             new SetRecoveryAccount().handle(resetReq, context);
         } catch (ServiceException e) {
-            throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
+            throw ServiceException.FAILURE("Cannot reset the code", e);
         }
     }
 
@@ -130,7 +130,7 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
             // TODO: Check if reusing context here is a good idea or if we should create a new one
             new SetRecoveryAccount().handle(setReq, context);
         } catch (ServiceException e) {
-            throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
+            throw ServiceException.FAILURE("Cannot send the code by email", e);
         }
     }
 
