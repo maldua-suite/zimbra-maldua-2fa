@@ -29,6 +29,7 @@ import com.zimbra.common.service.ServiceException;
 import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.soap.Element;
 import com.zimbra.common.util.ZimbraCookie;
+import com.zimbra.cs.account.auth.AuthContext.Protocol;
 import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
 import com.zimbra.cs.account.AuthToken;
@@ -63,14 +64,33 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
             throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
         }
 
+        Element passwordEl = request.getOptionalElement(AccountConstants.E_PASSWORD);
+        String password = null;
+        if (passwordEl != null) {
+            password = passwordEl.getText();
+        }
+
         Element emailEl = request.getOptionalElement(AccountConstants.E_EMAIL);
         String email = null;
         if (emailEl != null) {
             email = emailEl.getText();
         }
 
-        resetCode(context);
-        sendCode(email,context);
+        Element twoFactorCodeEl = request.getOptionalElement(AccountConstants.E_TWO_FACTOR_CODE);
+        String twoFactorCode = null;
+        if (twoFactorCodeEl != null) {
+            twoFactorCode = twoFactorCodeEl.getText();
+        }
+
+        if ( (password != null) && (email != null) ) {
+          account.authAccount(password, Protocol.soap);
+          resetCode(context);
+          sendCode(email,context);
+        } else if (twoFactorCode != null) {
+          validateCode(twoFactorCode, context);
+        } else {
+          throw ServiceException.FAILURE("Non supported wizard input.", null);
+        }
 
         EnableTwoFactorAuthResponse response = new EnableTwoFactorAuthResponse();
         HttpServletRequest httpReq = (HttpServletRequest)context.get(SoapServlet.SERVLET_REQUEST);
@@ -102,7 +122,7 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
             // TODO: Check if reusing context here is a good idea or if we should create a new one
             new SetRecoveryAccount().handle(resetReq, context);
         } catch (ServiceException e) {
-            throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
+            throw ServiceException.FAILURE("Cannot reset the code", e);
         }
     }
 
@@ -118,7 +138,23 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
             // TODO: Check if reusing context here is a good idea or if we should create a new one
             new SetRecoveryAccount().handle(setReq, context);
         } catch (ServiceException e) {
-            throw ServiceException.FAILURE("Cannot set the Recovery Account", e);
+            throw ServiceException.FAILURE("Cannot send the code by email", e);
+        }
+    }
+
+    private void validateCode(String twoFactorCode, Map<String, Object> context) throws ServiceException {
+        SetRecoveryAccountRequest setRecoveryAccountRequest = new SetRecoveryAccountRequest();
+        setRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.validateCode);
+        setRecoveryAccountRequest.setRecoveryAccountVerificationCode(twoFactorCode);
+        setRecoveryAccountRequest.setChannel(Channel.EMAIL);
+        Element setReq = JaxbUtil.jaxbToElement(setRecoveryAccountRequest);
+        setReq.addAttribute("isFromEnableTwoFactorAuth", true);
+
+        try {
+            // TODO: Check if reusing context here is a good idea or if we should create a new one
+            new SetRecoveryAccount().handle(setReq, context);
+        } catch (ServiceException e) {
+            throw ServiceException.FAILURE("Cannot validate the code", e);
         }
     }
 
