@@ -70,10 +70,6 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
             password = passwordEl.getText();
         }
 
-        if (password != null) {
-            account.authAccount(password, Protocol.soap);
-        }
-
         Element emailEl = request.getOptionalElement(AccountConstants.E_EMAIL);
         String email = null;
         if (emailEl != null) {
@@ -81,6 +77,7 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
         }
 
         if ( (password != null) && (email != null) ) {
+          account.authAccount(password, Protocol.soap);
           resetCode(context);
           sendCode(email,context);
         } else {
