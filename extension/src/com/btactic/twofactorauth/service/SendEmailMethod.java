@@ -76,10 +76,18 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
             email = emailEl.getText();
         }
 
+        Element twoFactorCodeEl = request.getOptionalElement(AccountConstants.E_TWO_FACTOR_CODE);
+        String twoFactorCode = null;
+        if (twoFactorCodeEl != null) {
+            twoFactorCode = twoFactorCodeEl.getText();
+        }
+
         if ( (password != null) && (email != null) ) {
           account.authAccount(password, Protocol.soap);
           resetCode(context);
           sendCode(email,context);
+        } else if (twoFactorCode != null) {
+          validateCode(twoFactorCode, context);
         } else {
           throw ServiceException.FAILURE("Non supported wizard input.", null);
         }
@@ -131,6 +139,22 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
             new SetRecoveryAccount().handle(setReq, context);
         } catch (ServiceException e) {
             throw ServiceException.FAILURE("Cannot send the code by email", e);
+        }
+    }
+
+    private void validateCode(String twoFactorCode, Map<String, Object> context) throws ServiceException {
+        SetRecoveryAccountRequest setRecoveryAccountRequest = new SetRecoveryAccountRequest();
+        setRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.validateCode);
+        setRecoveryAccountRequest.setRecoveryAccountVerificationCode(twoFactorCode);
+        setRecoveryAccountRequest.setChannel(Channel.EMAIL);
+        Element setReq = JaxbUtil.jaxbToElement(setRecoveryAccountRequest);
+        setReq.addAttribute("isFromEnableTwoFactorAuth", true);
+
+        try {
+            // TODO: Check if reusing context here is a good idea or if we should create a new one
+            new SetRecoveryAccount().handle(setReq, context);
+        } catch (ServiceException e) {
+            throw ServiceException.FAILURE("Cannot validate the code", e);
         }
     }
 
