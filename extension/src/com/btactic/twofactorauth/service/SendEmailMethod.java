@@ -80,8 +80,12 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
             email = emailEl.getText();
         }
 
-        resetCode(context);
-        sendCode(email,context);
+        if ( (password != null) && (email != null) ) {
+          resetCode(context);
+          sendCode(email,context);
+        } else {
+          throw ServiceException.FAILURE("Non supported wizard input.", null);
+        }
 
         EnableTwoFactorAuthResponse response = new EnableTwoFactorAuthResponse();
         HttpServletRequest httpReq = (HttpServletRequest)context.get(SoapServlet.SERVLET_REQUEST);
