@@ -29,6 +29,7 @@ import com.zimbra.common.service.ServiceException;
 import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.soap.Element;
 import com.zimbra.common.util.ZimbraCookie;
+import com.zimbra.cs.account.auth.AuthContext.Protocol;
 import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
 import com.zimbra.cs.account.AuthToken;
@@ -61,6 +62,16 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
         }
         if (!account.isFeatureTwoFactorAuthAvailable()) {
             throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
+        }
+
+        Element passwordEl = request.getOptionalElement(AccountConstants.E_PASSWORD);
+        String password = null;
+        if (passwordEl != null) {
+            password = passwordEl.getText();
+        }
+
+        if (password != null) {
+            account.authAccount(password, Protocol.soap);
         }
 
         Element emailEl = request.getOptionalElement(AccountConstants.E_EMAIL);
