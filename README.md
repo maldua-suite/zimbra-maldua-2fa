@@ -140,7 +140,7 @@ because you won't need it anymore.
 As per Zimbra installation requisites your Operating System should have its time in sync with global clocks thanks to tools such as:
 
 - ntpd
-- [systemd-tymesyncd](https://wiki.archlinux.org/title/systemd-timesyncd)
+- [systemd-timesyncd](https://wiki.archlinux.org/title/systemd-timesyncd)
 
 otherwise the final user might get a wrong password even if it's the correct one.
 
