@@ -67,6 +67,10 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
         }
         ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account, acctNamePassedIn);
 
+        if (!manager.isAllowedMethod(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL)) {
+            throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
+        }
+
         Element passwordEl = request.getOptionalElement(AccountConstants.E_PASSWORD);
         String password = null;
         if (passwordEl != null) {
