@@ -65,6 +65,11 @@ public class TwoFactorAuthMethod extends EnableTwoFactorAuth {
             throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
         }
         ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account, acctNamePassedIn);
+
+        if (!manager.isAllowedMethod(AccountConstants.E_TWO_FACTOR_METHOD_APP)) {
+            throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
+        }
+
         EnableTwoFactorAuthResponse response = new EnableTwoFactorAuthResponse();
         Element passwordEl = request.getOptionalElement(AccountConstants.E_PASSWORD);
         String password = null;
