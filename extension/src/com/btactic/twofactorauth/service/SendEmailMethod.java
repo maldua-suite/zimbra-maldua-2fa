@@ -24,6 +24,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.btactic.twofactorauth.ZetaTwoFactorAuth;
+
 import com.zimbra.common.account.Key.AccountBy;
 import com.zimbra.common.service.ServiceException;
 import com.zimbra.common.soap.AccountConstants;
@@ -63,6 +65,7 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
         if (!account.isFeatureTwoFactorAuthAvailable()) {
             throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
         }
+        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account, acctNamePassedIn);
 
         Element passwordEl = request.getOptionalElement(AccountConstants.E_PASSWORD);
         String password = null;
@@ -88,6 +91,8 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
           sendCode(email,context);
         } else if (twoFactorCode != null) {
           validateCode(twoFactorCode, context);
+          manager.enableTwoFactorAuth();
+          manager.addEnabledMethod(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL);
         } else {
           throw ServiceException.FAILURE("Non supported wizard input.", null);
         }
