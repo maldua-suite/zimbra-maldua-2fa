@@ -117,6 +117,7 @@ public class TwoFactorAuthMethod extends EnableTwoFactorAuth {
             }
             manager.authenticateTOTP(twoFactorCode.getText());
             manager.enableTwoFactorAuth();
+            manager.addEnabledMethod(AccountConstants.E_TWO_FACTOR_METHOD_APP);
             ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
             response.setScratchCodes(scratchCodesManager.getCodes());
             int tokenValidityValue = account.getAuthTokenValidityValue();
