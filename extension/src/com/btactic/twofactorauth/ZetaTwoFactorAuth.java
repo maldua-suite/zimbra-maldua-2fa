@@ -373,6 +373,11 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         account.setTwoFactorAuthEnabled(true);
     }
 
+    // What 2FA method is enabled by user: app and/or email
+    public void addEnabledMethod(String twoFactorAuthMethodEnabled) throws ServiceException {
+        account.addTwoFactorAuthMethodEnabled(twoFactorAuthMethodEnabled);
+    }
+
     private void delete2FACredentials() throws ServiceException {
         account.setTwoFactorAuthSecret(null);
     }
