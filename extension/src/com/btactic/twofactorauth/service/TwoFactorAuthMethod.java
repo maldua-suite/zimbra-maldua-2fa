@@ -142,4 +142,18 @@ public class TwoFactorAuthMethod {
 
     private void encodeAlreadyEnabled(EnableTwoFactorAuthResponse response) {}
 
+    public Element handleDisable(Element request, Map<String, Object> context)
+            throws ServiceException {
+
+        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
+        Account account = AccountDocumentHandler.getRequestedAccount(zsc);
+        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account);
+        DisableTwoFactorAuthResponse response = new DisableTwoFactorAuthResponse();
+        manager.disableTwoFactorAuth(true);
+        ZetaAppSpecificPasswords appSpecificPasswordsManager = new ZetaAppSpecificPasswords(account);
+        appSpecificPasswordsManager.revokeAll();
+        return zsc.jaxbToElement(response);
+
+    }
+
 }
