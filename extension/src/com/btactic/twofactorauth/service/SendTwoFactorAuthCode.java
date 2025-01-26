@@ -46,7 +46,7 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
 
         if (SendTwoFactorAuthCodeAction.EMAIL.equals(action)) {
             SendEmailMethod sendEmailMethod = new SendEmailMethod();
-            return sendEmailMethod.handleSendTwoFactorAuthCode(request,context);
+            return sendEmailMethod.handleSendTwoFactorAuthCode(request, context);
             // response.setStatus(SendTwoFactorAuthCodeStatus.SENT);
         } else if (SendTwoFactorAuthCodeAction.RESET.equals(action)) {
             response.setStatus(SendTwoFactorAuthCodeStatus.RESET_SUCCEEDED);
