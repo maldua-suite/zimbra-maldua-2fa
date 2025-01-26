@@ -152,8 +152,6 @@ public class TwoFactorAuthMethod {
         ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account);
         DisableTwoFactorAuthResponse response = new DisableTwoFactorAuthResponse();
         manager.disableTwoFactorAuthApp(true);
-        ZetaAppSpecificPasswords appSpecificPasswordsManager = new ZetaAppSpecificPasswords(account);
-        appSpecificPasswordsManager.revokeAll();
         return zsc.jaxbToElement(response);
 
     }
