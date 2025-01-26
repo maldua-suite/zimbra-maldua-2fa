@@ -67,10 +67,10 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
 
         if (method.equals(AccountConstants.E_TWO_FACTOR_METHOD_APP)) {
             TwoFactorAuthMethod twoFactorAuthMethod = new TwoFactorAuthMethod();
-            return twoFactorAuthMethod.handle(request, context);
+            return twoFactorAuthMethod.handleEnable(request, context);
         } else if (method.equals(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL)) {
             SendEmailMethod sendEmailMethod = new SendEmailMethod();
-            return sendEmailMethod.handle(request, context);
+            return sendEmailMethod.handleEnable(request, context);
         }
 
         throw AuthFailedServiceException.AUTH_FAILED("Unsupported 2FA method");

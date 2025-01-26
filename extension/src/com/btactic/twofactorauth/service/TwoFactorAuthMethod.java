@@ -37,6 +37,7 @@ import com.zimbra.cs.account.AuthToken.Usage;
 import com.zimbra.cs.account.AuthTokenException;
 import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.account.auth.AuthContext.Protocol;
+import com.zimbra.cs.service.account.AccountDocumentHandler;
 import com.btactic.twofactorauth.credentials.TOTPCredentials;
 import com.btactic.twofactorauth.ZetaTwoFactorAuth;
 import com.btactic.twofactorauth.ZetaScratchCodes;
@@ -49,13 +50,12 @@ import com.zimbra.soap.ZimbraSoapContext;
  * @author iraykin
  *
  */
-public class TwoFactorAuthMethod extends EnableTwoFactorAuth {
+public class TwoFactorAuthMethod {
 
-    @Override
-    public Element handle(Element request, Map<String, Object> context)
+    public Element handleEnable(Element request, Map<String, Object> context)
             throws ServiceException {
         Provisioning prov = Provisioning.getInstance();
-        ZimbraSoapContext zsc = getZimbraSoapContext(context);
+        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
         String acctNamePassedIn = request.getElement(AccountConstants.E_NAME).getText();
         Account account = prov.get(AccountBy.name, acctNamePassedIn);
         if (account == null) {
@@ -141,10 +141,5 @@ public class TwoFactorAuthMethod extends EnableTwoFactorAuth {
     }
 
     private void encodeAlreadyEnabled(EnableTwoFactorAuthResponse response) {}
-
-    @Override
-    public boolean needsAuth(Map<String, Object> context) {
-        return false;
-    }
 
 }

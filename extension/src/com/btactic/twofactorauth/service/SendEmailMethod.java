@@ -37,6 +37,7 @@ import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
 import com.zimbra.cs.account.AuthToken;
 import com.zimbra.cs.account.AuthTokenException;
 import com.zimbra.cs.account.Provisioning;
+import com.zimbra.cs.service.account.AccountDocumentHandler;
 import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.cs.service.mail.SetRecoveryAccount;
 import com.zimbra.soap.account.message.EnableTwoFactorAuthResponse;
@@ -50,13 +51,12 @@ import com.zimbra.soap.ZimbraSoapContext;
  * @author iraykin
  *
  */
-public class SendEmailMethod extends EnableTwoFactorAuth {
+public class SendEmailMethod {
 
-    @Override
-    public Element handle(Element request, Map<String, Object> context)
+    public Element handleEnable(Element request, Map<String, Object> context)
             throws ServiceException {
         Provisioning prov = Provisioning.getInstance();
-        ZimbraSoapContext zsc = getZimbraSoapContext(context);
+        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
         String acctNamePassedIn = request.getElement(AccountConstants.E_NAME).getText();
         Account account = prov.get(AccountBy.name, acctNamePassedIn);
         if (account == null) {
@@ -113,11 +113,6 @@ public class SendEmailMethod extends EnableTwoFactorAuth {
         }
 
         return zsc.jaxbToElement(response);
-    }
-
-    @Override
-    public boolean needsAuth(Map<String, Object> context) {
-        return false;
     }
 
     private void resetCode(Map<String, Object> context) throws ServiceException {
