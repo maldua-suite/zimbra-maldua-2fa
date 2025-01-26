@@ -38,6 +38,13 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
 
     @Override
     public Element handle(Element request, Map<String, Object> context) throws ServiceException {
+
+        ZimbraLog.extensions.info("MALDUA-2FA-DEBUG-0.1-i");
+        ZimbraLog.extensions.warn("MALDUA-2FA-DEBUG-0.1-w");
+        ZimbraLog.extensions.debug("MALDUA-2FA-DEBUG-0.1-d");
+        ZimbraLog.extensions.error("MALDUA-2FA-DEBUG-0.1-e");
+        System.out.println("MALDUA-2FA-DEBUG-0ln");
+
         ZimbraSoapContext zsc = getZimbraSoapContext(context);
         System.out.println("MALDUA-2FA-DEBUG-1");
         SendTwoFactorAuthCodeRequest req = JaxbUtil.elementToJaxb(request);
