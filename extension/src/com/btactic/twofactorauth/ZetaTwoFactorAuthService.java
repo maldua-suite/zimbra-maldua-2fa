@@ -20,6 +20,7 @@ import com.btactic.twofactorauth.service.GenerateScratchCodes;
 import com.btactic.twofactorauth.service.GetTrustedDevices;
 import com.btactic.twofactorauth.service.RevokeTrustedDevice;
 import com.btactic.twofactorauth.service.RevokeOtherTrustedDevices;
+import com.btactic.twofactorauth.service.SendTwoFactorAuthCode;
 
 public class ZetaTwoFactorAuthService extends AccountService implements DocumentService {
 
@@ -34,6 +35,7 @@ public class ZetaTwoFactorAuthService extends AccountService implements Document
         dispatcher.registerHandler(AccountConstants.GET_TRUSTED_DEVICES_REQUEST, new GetTrustedDevices());
         dispatcher.registerHandler(AccountConstants.REVOKE_TRUSTED_DEVICE_REQUEST, new RevokeTrustedDevice());
         dispatcher.registerHandler(AccountConstants.REVOKE_OTHER_TRUSTED_DEVICES_REQUEST, new RevokeOtherTrustedDevices());
+        dispatcher.registerHandler(AccountConstants.SEND_TWO_FACTOR_AUTH_CODE_REQUEST, new SendTwoFactorAuthCode());
     }
 
 }
