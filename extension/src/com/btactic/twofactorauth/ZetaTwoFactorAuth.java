@@ -451,7 +451,8 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         if (account.isTwoFactorAuthEnabled()) {
             account.removeTwoFactorAuthMethodEnabled(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL);
             smartUnsetZimbraTwoFactorAuthEnabled();
-            // TODO
+            account.unsetPrefPasswordRecoveryAddress();
+            account.unsetPrefPasswordRecoveryAddressStatus();
         } else {
             ZimbraLog.account.info("two-factor authentication already disabled");
         }
