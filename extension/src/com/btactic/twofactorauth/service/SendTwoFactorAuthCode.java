@@ -38,24 +38,17 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
 
     @Override
     public Element handle(Element request, Map<String, Object> context) throws ServiceException {
-        ZimbraLog.extensions.info("MALDUA-2FA-DEBUG: Inside SendTwoFactorAuthCode function. 1");
         ZimbraSoapContext zsc = getZimbraSoapContext(context);
-        ZimbraLog.extensions.info("MALDUA-2FA-DEBUG: Inside SendTwoFactorAuthCode function. 2");
         // Account account = getRequestedAccount(zsc);
 
         SendTwoFactorAuthCodeRequest req = JaxbUtil.elementToJaxb(request);
-        ZimbraLog.extensions.info("MALDUA-2FA-DEBUG: Inside SendTwoFactorAuthCode function. 3");
         SendTwoFactorAuthCodeAction action = req.getAction();
 
-        ZimbraLog.extensions.info("MALDUA-2FA-DEBUG: Inside SendTwoFactorAuthCode function. 4");
-
         SendTwoFactorAuthCodeResponse response = new SendTwoFactorAuthCodeResponse();
-        ZimbraLog.extensions.info("MALDUA-2FA-DEBUG: Inside SendTwoFactorAuthCode function. 5");
+
         if (SendTwoFactorAuthCodeAction.EMAIL.equals(action)) {
-            ZimbraLog.extensions.error("Maldua 2FA does not support email yet.");
             response.setStatus(SendTwoFactorAuthCodeStatus.NOT_SENT);
         } else if (SendTwoFactorAuthCodeAction.RESET.equals(action)) {
-            ZimbraLog.extensions.info("MALDUA-2FA-DEBUG: Received action 'reset'");
             response.setStatus(SendTwoFactorAuthCodeStatus.RESET_SUCCEEDED);
             // TODO: Do something useful with this reset action
         } else {
