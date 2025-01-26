@@ -39,7 +39,6 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
     @Override
     public Element handle(Element request, Map<String, Object> context) throws ServiceException {
         ZimbraSoapContext zsc = getZimbraSoapContext(context);
-        // Account account = getRequestedAccount(zsc);
 
         SendTwoFactorAuthCodeRequest req = JaxbUtil.elementToJaxb(request);
         SendTwoFactorAuthCodeAction action = req.getAction();
@@ -47,7 +46,9 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
         SendTwoFactorAuthCodeResponse response = new SendTwoFactorAuthCodeResponse();
 
         if (SendTwoFactorAuthCodeAction.EMAIL.equals(action)) {
-            response.setStatus(SendTwoFactorAuthCodeStatus.NOT_SENT);
+            SendEmailMethod sendEmailMethod = new SendEmailMethod();
+            return sendEmailMethod.handleSendTwoFactorAuthCode(request,context);
+            // response.setStatus(SendTwoFactorAuthCodeStatus.SENT);
         } else if (SendTwoFactorAuthCodeAction.RESET.equals(action)) {
             response.setStatus(SendTwoFactorAuthCodeStatus.RESET_SUCCEEDED);
             // TODO: Do something useful with this reset action

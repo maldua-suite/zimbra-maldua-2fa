@@ -42,6 +42,8 @@ import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.cs.service.mail.SetRecoveryAccount;
 import com.zimbra.soap.account.message.EnableTwoFactorAuthResponse;
 import com.zimbra.soap.account.message.DisableTwoFactorAuthResponse;
+import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse;
+import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus;
 import com.zimbra.soap.mail.message.SetRecoveryAccountRequest;
 import com.zimbra.soap.type.Channel;
 import com.zimbra.soap.JaxbUtil;
@@ -173,6 +175,36 @@ public class SendEmailMethod {
         manager.disableTwoFactorAuthEmail();
         return zsc.jaxbToElement(response);
 
+    }
+
+    public Element handleSendTwoFactorAuthCode(Element request, Map<String, Object> context)
+            throws ServiceException {
+        Provisioning prov = Provisioning.getInstance();
+        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
+        String acctNamePassedIn = request.getElement(AccountConstants.E_NAME).getText();
+        Account account = prov.get(AccountBy.name, acctNamePassedIn);
+        if (account == null) {
+            throw AuthFailedServiceException.AUTH_FAILED("no such account");
+        }
+
+        SendTwoFactorAuthCodeResponse response = new SendTwoFactorAuthCodeResponse();
+
+        String recoveryEmail = account.getPrefPasswordRecoveryAddress();
+
+        if (recoveryEmail != null) {
+          resetCode(context);
+          try {
+            sendCode(recoveryEmail,context);
+          } catch (ServiceException e) {
+            response.setStatus(SendTwoFactorAuthCodeStatus.NOT_SENT);
+          }
+        } else {
+          throw ServiceException.FAILURE("Non supported wizard input.", null);
+        }
+
+        response.setStatus(SendTwoFactorAuthCodeStatus.SENT);
+
+        return zsc.jaxbToElement(response);
     }
 
 }
