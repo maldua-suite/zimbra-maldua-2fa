@@ -42,6 +42,7 @@ import com.zimbra.cs.account.auth.twofactor.ScratchCodes;
 import com.zimbra.common.auth.twofactor.TwoFactorOptions.Encoding;
 import com.zimbra.common.auth.twofactor.TOTPAuthenticator;
 import com.zimbra.common.service.ServiceException;
+import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.util.ZimbraLog;
 import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.AccountServiceException;
@@ -389,6 +390,12 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         }
     }
 
+    // Count 2FA (app and/or email) enabled methods.
+    private int enabledTwoFactorAuthMethodsCount() throws ServiceException {
+        String[] enabledMethods = account.getTwoFactorAuthMethodEnabled();
+        return (enabledMethods.length);
+    }
+
     private void delete2FACredentials() throws ServiceException {
         account.setTwoFactorAuthSecret(null);
     }
@@ -397,6 +404,57 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         delete2FACredentials();
         ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
         scratchCodesManager.deleteCredentials();
+    }
+
+    public void smartUnsetZimbraTwoFactorAuthEnabled() throws ServiceException {
+        // We assume specific enabled attributes based on methods have been removed previously
+        // Only unset if there are no remaining methods.
+
+        if (enabledTwoFactorAuthMethodsCount() == 0) {
+          if (account.isTwoFactorAuthEnabled()) {
+              account.setTwoFactorAuthEnabled(false);
+          } else {
+              ZimbraLog.account.info("two-factor authentication already disabled");
+          }
+        }
+    }
+
+    public void checkDisableTwoFactorAuth() throws ServiceException {
+        // Option 1: Two methods enabled: OK
+        // Option 2: If only one method enabled then only disable if not required
+        if (enabledTwoFactorAuthMethodsCount() == 1) {
+          if (account.isFeatureTwoFactorAuthRequired()) {
+              throw ServiceException.CANNOT_DISABLE_TWO_FACTOR_AUTH();
+          }
+        }
+    }
+
+    public void disableTwoFactorAuthApp(boolean deleteCredentials) throws ServiceException {
+        checkDisableTwoFactorAuth();
+
+        if (account.isTwoFactorAuthEnabled()) {
+            account.removeTwoFactorAuthMethodEnabled(AccountConstants.E_TWO_FACTOR_METHOD_APP);
+            smartUnsetZimbraTwoFactorAuthEnabled();
+            if (deleteCredentials) {
+                deleteCredentials();
+            }
+            ZetaAppSpecificPasswords appSpecificPasswordsManager = new ZetaAppSpecificPasswords(account);
+            appSpecificPasswordsManager.revokeAll();
+        } else {
+            ZimbraLog.account.info("two-factor authentication already disabled");
+        }
+    }
+
+    public void disableTwoFactorAuthEmail() throws ServiceException {
+        checkDisableTwoFactorAuth();
+
+        if (account.isTwoFactorAuthEnabled()) {
+            account.removeTwoFactorAuthMethodEnabled(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL);
+            smartUnsetZimbraTwoFactorAuthEnabled();
+            // TODO
+        } else {
+            ZimbraLog.account.info("two-factor authentication already disabled");
+        }
     }
 
     @Override

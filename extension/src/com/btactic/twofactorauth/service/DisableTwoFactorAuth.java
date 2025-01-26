@@ -22,9 +22,10 @@ package com.btactic.twofactorauth.service;
 import java.util.Map;
 
 import com.zimbra.common.service.ServiceException;
+import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.soap.Element;
 import com.zimbra.cs.account.Account;
-import com.zimbra.soap.account.message.DisableTwoFactorAuthResponse;
+import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
 import com.btactic.twofactorauth.ZetaTwoFactorAuth;
 import com.btactic.twofactorauth.app.ZetaAppSpecificPasswords;
 import com.zimbra.soap.ZimbraSoapContext;

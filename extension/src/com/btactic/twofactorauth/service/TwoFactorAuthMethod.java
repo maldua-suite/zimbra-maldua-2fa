@@ -38,11 +38,13 @@ import com.zimbra.cs.account.AuthTokenException;
 import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.account.auth.AuthContext.Protocol;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
+import com.btactic.twofactorauth.app.ZetaAppSpecificPasswords;
 import com.btactic.twofactorauth.credentials.TOTPCredentials;
 import com.btactic.twofactorauth.ZetaTwoFactorAuth;
 import com.btactic.twofactorauth.ZetaScratchCodes;
 import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.soap.account.message.EnableTwoFactorAuthResponse;
+import com.zimbra.soap.account.message.DisableTwoFactorAuthResponse;
 import com.zimbra.soap.SoapServlet;
 import com.zimbra.soap.ZimbraSoapContext;
 
@@ -149,7 +151,7 @@ public class TwoFactorAuthMethod {
         Account account = AccountDocumentHandler.getRequestedAccount(zsc);
         ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account);
         DisableTwoFactorAuthResponse response = new DisableTwoFactorAuthResponse();
-        manager.disableTwoFactorAuth(true);
+        manager.disableTwoFactorAuthApp(true);
         ZetaAppSpecificPasswords appSpecificPasswordsManager = new ZetaAppSpecificPasswords(account);
         appSpecificPasswordsManager.revokeAll();
         return zsc.jaxbToElement(response);

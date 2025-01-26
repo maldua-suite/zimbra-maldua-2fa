@@ -41,6 +41,7 @@ import com.zimbra.cs.service.account.AccountDocumentHandler;
 import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.cs.service.mail.SetRecoveryAccount;
 import com.zimbra.soap.account.message.EnableTwoFactorAuthResponse;
+import com.zimbra.soap.account.message.DisableTwoFactorAuthResponse;
 import com.zimbra.soap.mail.message.SetRecoveryAccountRequest;
 import com.zimbra.soap.type.Channel;
 import com.zimbra.soap.JaxbUtil;
@@ -160,6 +161,18 @@ public class SendEmailMethod {
         } catch (ServiceException e) {
             throw ServiceException.FAILURE("Cannot validate the code", e);
         }
+    }
+
+    public Element handleDisable(Element request, Map<String, Object> context)
+            throws ServiceException {
+
+        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
+        Account account = AccountDocumentHandler.getRequestedAccount(zsc);
+        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account);
+        DisableTwoFactorAuthResponse response = new DisableTwoFactorAuthResponse();
+        manager.disableTwoFactorAuthEmail();
+        return zsc.jaxbToElement(response);
+
     }
 
 }
