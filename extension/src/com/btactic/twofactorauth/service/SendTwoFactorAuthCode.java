@@ -71,4 +71,9 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
         return zsc.jaxbToElement(response);
     }
 
+    @Override
+    public boolean needsAuth(Map<String, Object> context) {
+        return false;
+    }
+
 }
