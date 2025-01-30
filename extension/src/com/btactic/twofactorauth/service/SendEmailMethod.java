@@ -35,6 +35,7 @@ import com.zimbra.cs.account.auth.AuthContext.Protocol;
 import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
 import com.zimbra.cs.account.AuthToken;
+import com.zimbra.cs.account.AuthToken.Usage;
 import com.zimbra.cs.account.AuthTokenException;
 import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
@@ -42,6 +43,7 @@ import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.cs.service.mail.SetRecoveryAccount;
 import com.zimbra.soap.account.message.EnableTwoFactorAuthResponse;
 import com.zimbra.soap.account.message.DisableTwoFactorAuthResponse;
+import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus;
 import com.zimbra.soap.mail.message.SetRecoveryAccountRequest;
@@ -181,15 +183,17 @@ public class SendEmailMethod {
             throws ServiceException {
         Provisioning prov = Provisioning.getInstance();
         ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
-        String acctNamePassedIn = request.getElement(AccountConstants.E_NAME).getText();
-        Account account = prov.get(AccountBy.name, acctNamePassedIn);
-        if (account == null) {
-            throw AuthFailedServiceException.AUTH_FAILED("no such account");
-        }
+        SendTwoFactorAuthCodeRequest req = JaxbUtil.elementToJaxb(request);
+
+        AuthToken at;
+        Account authTokenAcct;
+
+        at = zsc.getAuthToken();
+        authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.TWO_FACTOR_AUTH);
 
         SendTwoFactorAuthCodeResponse response = new SendTwoFactorAuthCodeResponse();
 
-        String recoveryEmail = account.getPrefPasswordRecoveryAddress();
+        String recoveryEmail = authTokenAcct.getPrefPasswordRecoveryAddress();
 
         if (recoveryEmail != null) {
           resetCode(context);
