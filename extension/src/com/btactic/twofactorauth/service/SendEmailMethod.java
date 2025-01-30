@@ -200,7 +200,6 @@ public class SendEmailMethod {
         String recoveryEmail = authTokenAcct.getPrefPasswordRecoveryAddress();
 
         if (recoveryEmail != null) {
-          resetCode(context);
           try {
             sendCode(recoveryEmail,context);
           } catch (ServiceException e) {
