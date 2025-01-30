@@ -188,6 +188,10 @@ public class SendEmailMethod {
         AuthToken at;
         Account authTokenAcct;
 
+        // TODO: Should we get the AuthToken from the SendTwoFactorAuthCodeRequest
+        // instead of zcs
+        // because the token is sent at the same level of action in `SendTwoFactorAuthCodeTag.java` file
+        // ?
         at = zsc.getAuthToken();
         authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.TWO_FACTOR_AUTH);
 
