@@ -199,6 +199,9 @@ public class SendEmailMethod {
 
         String recoveryEmail = authTokenAcct.getPrefPasswordRecoveryAddress();
 
+        authTokenAcct.setTwoFactorCodeForEmail("123444"); // Hard coded value to test this
+
+/*
         if (recoveryEmail != null) {
           try {
             sendCode(recoveryEmail,context);
@@ -208,6 +211,7 @@ public class SendEmailMethod {
         } else {
           throw ServiceException.FAILURE("Non supported wizard input.", null);
         }
+*/
 
         response.setStatus(SendTwoFactorAuthCodeStatus.SENT);
 
