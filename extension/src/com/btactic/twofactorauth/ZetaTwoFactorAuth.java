@@ -333,6 +333,10 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
             ZimbraLog.account.error("two-factor code missing");
             throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "two-factor code missing");
         }
+
+        // Debug information received
+        ZimbraLog.account.error("DEBUG- account toString: " + account.toString());
+
         ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
         Boolean codeIsScratchCode = scratchCodesManager.isScratchCode(code);
         if (codeIsScratchCode == null || codeIsScratchCode.equals(false)) {
