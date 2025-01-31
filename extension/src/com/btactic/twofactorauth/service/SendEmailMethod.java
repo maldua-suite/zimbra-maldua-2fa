@@ -199,7 +199,8 @@ public class SendEmailMethod {
 
         String recoveryEmail = authTokenAcct.getPrefPasswordRecoveryAddress();
 
-        authTokenAcct.setTwoFactorCodeForEmail("123444"); // Hard coded value to test this
+        // authTokenAcct.setTwoFactorCodeForEmail("123444"); // Hard coded value to test this
+        // TODO: Save with a Map
 
 /*
         if (recoveryEmail != null) {
