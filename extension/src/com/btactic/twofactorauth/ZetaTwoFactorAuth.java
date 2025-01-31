@@ -335,7 +335,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         }
 
         // Debug information received
-        ZimbraLog.account.error("DEBUG- account toString: " + account.toString());
+        ZimbraLog.account.error("DEBUG- Let's see the code: " + code);
 
         ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
         Boolean codeIsScratchCode = scratchCodesManager.isScratchCode(code);
