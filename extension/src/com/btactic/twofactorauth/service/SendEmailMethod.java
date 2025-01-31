@@ -35,6 +35,7 @@ import com.zimbra.cs.account.auth.AuthContext.Protocol;
 import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
 import com.zimbra.cs.account.AuthToken;
+import com.zimbra.cs.account.AuthToken.Usage;
 import com.zimbra.cs.account.AuthTokenException;
 import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
@@ -42,6 +43,9 @@ import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.cs.service.mail.SetRecoveryAccount;
 import com.zimbra.soap.account.message.EnableTwoFactorAuthResponse;
 import com.zimbra.soap.account.message.DisableTwoFactorAuthResponse;
+import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest;
+import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse;
+import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus;
 import com.zimbra.soap.mail.message.SetRecoveryAccountRequest;
 import com.zimbra.soap.type.Channel;
 import com.zimbra.soap.JaxbUtil;
@@ -173,6 +177,46 @@ public class SendEmailMethod {
         manager.disableTwoFactorAuthEmail();
         return zsc.jaxbToElement(response);
 
+    }
+
+    public Element handleSendTwoFactorAuthCode(Element request, Map<String, Object> context)
+            throws ServiceException {
+        Provisioning prov = Provisioning.getInstance();
+        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
+        SendTwoFactorAuthCodeRequest req = JaxbUtil.elementToJaxb(request);
+
+        AuthToken at;
+        Account authTokenAcct;
+
+        // TODO: Should we get the AuthToken from the SendTwoFactorAuthCodeRequest
+        // instead of zcs
+        // because the token is sent at the same level of action in `SendTwoFactorAuthCodeTag.java` file
+        // ?
+        at = zsc.getAuthToken();
+        authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.TWO_FACTOR_AUTH);
+
+        SendTwoFactorAuthCodeResponse response = new SendTwoFactorAuthCodeResponse();
+
+        String recoveryEmail = authTokenAcct.getPrefPasswordRecoveryAddress();
+
+        // authTokenAcct.setTwoFactorCodeForEmail("123444"); // Hard coded value to test this
+        // TODO: Save with a Map
+
+/*
+        if (recoveryEmail != null) {
+          try {
+            sendCode(recoveryEmail,context);
+          } catch (ServiceException e) {
+            response.setStatus(SendTwoFactorAuthCodeStatus.NOT_SENT);
+          }
+        } else {
+          throw ServiceException.FAILURE("Non supported wizard input.", null);
+        }
+*/
+
+        response.setStatus(SendTwoFactorAuthCodeStatus.SENT);
+
+        return zsc.jaxbToElement(response);
     }
 
 }
