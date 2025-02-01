@@ -53,6 +53,7 @@ import com.btactic.twofactorauth.app.ZetaAppSpecificPasswordData;
 import com.btactic.twofactorauth.app.ZetaAppSpecificPasswords;
 import com.btactic.twofactorauth.credentials.CredentialGenerator;
 import com.btactic.twofactorauth.credentials.TOTPCredentials;
+import com.btactic.twofactorauth.service.exception.SendTwoFactorAuthCodeException;
 import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDevices;
 import com.btactic.twofactorauth.ZetaScratchCodes;
 import com.zimbra.cs.account.Config;
@@ -345,10 +346,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         boolean emailCodeIsExpired = System.currentTimeMillis() > emailExpiryTime;
 
         if (emailCodeIsExpired) {
-            // TODO: Create custom exception class so that we can throw
-            // the new 'account.CODE_EXPIRED' code
-            // in a transparent manner
-            throw ForgetPasswordException.CODE_EXPIRED("The email 2FA code is expired.");
+            throw SendTwoFactorAuthCodeException.CODE_EXPIRED("The email 2FA code is expired.");
         }
 
         return (emailCode.equals(code));
