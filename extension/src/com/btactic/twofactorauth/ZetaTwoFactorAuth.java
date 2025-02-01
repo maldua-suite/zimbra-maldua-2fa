@@ -334,6 +334,11 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         }
     }
 
+    private Boolean isTOTPCode(String code) throws ServiceException {
+      int totpLength = getGlobalConfig().getTwoFactorCodeLength();
+      return code.length() == totpLength;
+    }
+
     @Override
     public void authenticateTOTP(String code) throws ServiceException {
         if (!checkTOTPCode(code)) {
@@ -348,23 +353,20 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
             ZimbraLog.account.error("two-factor code missing");
             throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "two-factor code missing");
         }
-        ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
-        Boolean codeIsScratchCode = isScratchCode(code);
-        if (codeIsScratchCode == null || codeIsScratchCode.equals(false)) {
-            if (!checkTOTPCode(code)) {
-                boolean success = false;
-                if (codeIsScratchCode == null) {
-                    //could maybe be a scratch code
-                    success = scratchCodesManager.checkScratchCodes(code);
-                }
-                if (!success) {
-                    failedLogin();
-                    ZimbraLog.account.error("invalid two-factor code");
-                    throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "invalid two-factor code");
-                }
-            }
-        } else {
-            scratchCodesManager.authenticate(code);
+
+        boolean success = false;
+
+        if (isTOTPCode(code)) {
+          success = checkTOTPCode(code);
+        } else if (isScratchCode(code)) {
+          ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
+          success = scratchCodesManager.checkScratchCodes(code);
+        }
+
+        if (!success) {
+            failedLogin();
+            ZimbraLog.account.error("invalid two-factor code");
+            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "invalid two-factor code");
         }
     }
 
