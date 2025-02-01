@@ -371,6 +371,8 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
 
         if (isTOTPCode(code)) {
           success = checkTOTPCode(code);
+        } else if (isEmailCode(code)) {
+          success = checkEmailCode(code);
         } else if (isScratchCode(code)) {
           ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
           success = scratchCodesManager.checkScratchCodes(code);
