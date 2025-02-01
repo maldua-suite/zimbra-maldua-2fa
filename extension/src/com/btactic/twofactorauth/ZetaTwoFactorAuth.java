@@ -319,6 +319,23 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         return auth.validateCode(secret, curTime, code, getSecretEncoding());
     }
 
+    private Boolean isScratchCode(String code) throws ServiceException {
+        int totpLength = getGlobalConfig().getTwoFactorCodeLength();
+        int scratchCodeLength = getGlobalConfig().getTwoFactorScratchCodeLength();
+        if (totpLength == scratchCodeLength) {
+            try {
+                Integer.valueOf(code);
+                //most likely a TOTP code, but theoretically possible for this to be a scratch code with only digits
+                return null;
+            } catch (NumberFormatException e) {
+                //has alnum characters, so must be a scratch code
+                return true;
+            }
+        } else {
+            return code.length() != totpLength;
+        }
+    }
+
     @Override
     public void authenticateTOTP(String code) throws ServiceException {
         if (!checkTOTPCode(code)) {
@@ -334,7 +351,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
             throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "two-factor code missing");
         }
         ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
-        Boolean codeIsScratchCode = scratchCodesManager.isScratchCode(code);
+        Boolean codeIsScratchCode = isScratchCode(code);
         if (codeIsScratchCode == null || codeIsScratchCode.equals(false)) {
             if (!checkTOTPCode(code)) {
                 boolean success = false;

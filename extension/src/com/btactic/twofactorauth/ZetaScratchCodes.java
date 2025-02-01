@@ -254,23 +254,6 @@ public class ZetaScratchCodes implements ScratchCodes {
         }
     }
 
-    public Boolean isScratchCode(String code) throws ServiceException {
-        int totpLength = getGlobalConfig().getTwoFactorCodeLength();
-        int scratchCodeLength = getGlobalConfig().getTwoFactorScratchCodeLength();
-        if (totpLength == scratchCodeLength) {
-            try {
-                Integer.valueOf(code);
-                //most likely a TOTP code, but theoretically possible for this to be a scratch code with only digits
-                return null;
-            } catch (NumberFormatException e) {
-                //has alnum characters, so must be a scratch code
-                return true;
-            }
-        } else {
-            return code.length() != totpLength;
-        }
-    }
-
     public boolean checkScratchCodes(String scratchCode) throws ServiceException {
         for (String code: scratchCodes) {
             if (code.equals(scratchCode)) {
