@@ -314,21 +314,30 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
     }
 
     private boolean checkEmailCode(String code) throws ServiceException {
-/*
-        // Inspired from getSetRecoveryAccountCodeMap from ChannelProvider.java
-        Map<String, String> emailCodeMap = null;
-        String emailCodeMapEncoded = account.getTwoFactorCodeForEmail();
-        emailCodeMap = JWEUtil.getDecodedJWE(emailCodeMapEncoded);
-        // Inspired from validateSetRecoveryAccountCode from EmailChannel.java
-        if (emailCodeMap == null || emailCodeMap.isEmpty()) {
+        String encryptedEmailData = account.getTwoFactorCodeForEmail();
+        if (encryptedEmailData == null || encryptedEmailData.isEmpty()) {
             throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "Email based 2FA code not found on server.");
         }
-*/
-        String encryptedEmailData = account.getTwoFactorCodeForEmail();
         String decryptedEmailData = decrypt(account, encryptedEmailData);
 
+        String[] parts = decryptedEmailData.split(":");
+        if (parts.length != 3) {
+            throw ServiceException.FAILURE("invalid email code format", null);
+        }
+        String emailCode = parts[0];
+        String unKnownData2 = parts[1];
+        String timestamp = parts[2];
+        // Decryption example:
+        // decryptedEmailData: '6912720::1738424806645'
+        // emailCode :    '6912720'
+        // unKnownData2 : ''
+        // timestamp:     '1738424806645'
+
+        // TODO: Either return false or throw exception when the code is expired
+        // based on saved timestamp + email code expiry time (Read from config)
+
         ZimbraLog.account.error("MALDUA-DEBUG EmailTwoFactorCode: '" + decryptedEmailData + "'");
-        return false;
+        return (code == emailCode);
     }
 
     private boolean checkTOTPCode(String code) throws ServiceException {
