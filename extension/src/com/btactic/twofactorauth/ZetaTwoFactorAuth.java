@@ -314,6 +314,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
     }
 
     private boolean checkEmailCode(String code) throws ServiceException {
+/*
         // Inspired from getSetRecoveryAccountCodeMap from ChannelProvider.java
         Map<String, String> emailCodeMap = null;
         String emailCodeMapEncoded = account.getTwoFactorCodeForEmail();
@@ -322,8 +323,11 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         if (emailCodeMap == null || emailCodeMap.isEmpty()) {
             throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "Email based 2FA code not found on server.");
         }
+*/
+        String encryptedEmailData = account.getTwoFactorCodeForEmail();
+        String decryptedEmailData = decrypt(account, encryptedEmailData);
 
-        ZimbraLog.account.error("MALDUA-DEBUG EmailTwoFactorCode: '" + emailCodeMap.toString() + "'");
+        ZimbraLog.account.error("MALDUA-DEBUG EmailTwoFactorCode: '" + decryptedEmailData + "'");
         return false;
     }
 
