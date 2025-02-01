@@ -33,6 +33,7 @@ import com.google.common.base.Strings;
 import com.zimbra.common.auth.twofactor.AuthenticatorConfig;
 import com.zimbra.common.auth.twofactor.TwoFactorOptions.CodeLength;
 import com.zimbra.common.auth.twofactor.TwoFactorOptions.HashAlgorithm;
+import com.zimbra.cs.account.ForgetPasswordException;
 import com.zimbra.cs.account.auth.twofactor.AppSpecificPasswords;
 import com.zimbra.cs.account.auth.twofactor.TrustedDevices;
 import com.zimbra.cs.account.auth.twofactor.TwoFactorAuth;
@@ -313,9 +314,44 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
     }
 
     private boolean checkEmailCode(String code) throws ServiceException {
-        String savedEmailCode = account.getTwoFactorCodeForEmail();
-        ZimbraLog.account.error("MALDUA-DEBUG EmailTwoFactorCode: '" + savedEmailCode + "'");
-        return false;
+        String encryptedEmailData = account.getTwoFactorCodeForEmail();
+        if (encryptedEmailData == null || encryptedEmailData.isEmpty()) {
+            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "Email based 2FA code not found on server.");
+        }
+        String decryptedEmailData = decrypt(account, encryptedEmailData);
+
+        String[] parts = decryptedEmailData.split(":");
+        if (parts.length != 3) {
+            throw ServiceException.FAILURE("invalid email code format", null);
+        }
+        String emailCode = parts[0];
+        String unKnownData2 = parts[1];
+        String timestamp = parts[2];
+        // Decryption example:
+        // decryptedEmailData: '6912720::1738424806645'
+        // emailCode :    '6912720'
+        // unKnownData2 : ''
+        // timestamp:     '1738424806645'
+
+        long emailTimeStamp;
+        try {
+          emailTimeStamp = Long.parseLong(timestamp);
+        } catch (NumberFormatException e) {
+            throw ServiceException.FAILURE("invalid email code timestamp format", null);
+        }
+
+        long emailLifeTime = account.getTwoFactorCodeLifetimeForEmail();
+        long emailExpiryTime = emailTimeStamp + emailLifeTime;
+        boolean emailCodeIsExpired = System.currentTimeMillis() > emailExpiryTime;
+
+        if (emailCodeIsExpired) {
+            // TODO: Create custom exception class so that we can throw
+            // the new 'account.CODE_EXPIRED' code
+            // in a transparent manner
+            throw ForgetPasswordException.CODE_EXPIRED("The email 2FA code is expired.");
+        }
+
+        return (emailCode.equals(code));
     }
 
     private boolean checkTOTPCode(String code) throws ServiceException {
