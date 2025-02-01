@@ -337,7 +337,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         // based on saved timestamp + email code expiry time (Read from config)
 
         ZimbraLog.account.error("MALDUA-DEBUG EmailTwoFactorCode: '" + decryptedEmailData + "'");
-        return (code == emailCode);
+        return (emailCode.equals(code));
     }
 
     private boolean checkTOTPCode(String code) throws ServiceException {
