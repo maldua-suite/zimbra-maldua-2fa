@@ -358,11 +358,6 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         }
     }
 
-    private void invalidateScratchCode(String code) throws ServiceException {
-        scratchCodes.remove(code);
-        storeScratchCodes();
-    }
-
     @Override
     public TOTPCredentials generateCredentials() throws ServiceException {
         if (!account.isTwoFactorAuthEnabled()) {
