@@ -312,11 +312,22 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         return config;
     }
 
+    private boolean checkEmailCode(String code) throws ServiceException {
+        String savedEmailCode = account.getTwoFactorCodeForEmail();
+        ZimbraLog.account.error("MALDUA-DEBUG EmailTwoFactorCode: '" + savedEmailCode + "'");
+        return false;
+    }
+
     private boolean checkTOTPCode(String code) throws ServiceException {
         long curTime = System.currentTimeMillis() / 1000;
         AuthenticatorConfig config = getAuthenticatorConfig();
         TOTPAuthenticator auth = new TOTPAuthenticator(config);
         return auth.validateCode(secret, curTime, code, getSecretEncoding());
+    }
+
+    private boolean isEmailCode(String code) throws ServiceException {
+      int emailCodeLength = getGlobalConfig().getTwoFactorAuthEmailCodeLength();
+      return code.length() == emailCodeLength;
     }
 
     private Boolean isScratchCode(String code) throws ServiceException {
