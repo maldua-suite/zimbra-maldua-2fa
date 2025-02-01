@@ -39,6 +39,7 @@ import com.zimbra.cs.account.auth.twofactor.TwoFactorAuth;
 import com.zimbra.cs.account.auth.twofactor.TwoFactorAuth.CredentialConfig;
 import com.zimbra.cs.account.auth.twofactor.TwoFactorAuth.Factory;
 import com.zimbra.cs.account.auth.twofactor.ScratchCodes;
+import com.zimbra.cs.service.util.JWEUtil;
 import com.zimbra.common.auth.twofactor.TwoFactorOptions.Encoding;
 import com.zimbra.common.auth.twofactor.TOTPAuthenticator;
 import com.zimbra.common.service.ServiceException;
@@ -313,8 +314,16 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
     }
 
     private boolean checkEmailCode(String code) throws ServiceException {
-        String savedEmailCode = account.getTwoFactorCodeForEmail();
-        ZimbraLog.account.error("MALDUA-DEBUG EmailTwoFactorCode: '" + savedEmailCode + "'");
+        // Inspired from getSetRecoveryAccountCodeMap from ChannelProvider.java
+        Map<String, String> emailCodeMap = null;
+        String emailCodeMapEncoded = account.getTwoFactorCodeForEmail();
+        emailCodeMap = JWEUtil.getDecodedJWE(emailCodeMapEncoded);
+        // Inspired from validateSetRecoveryAccountCode from EmailChannel.java
+        if (emailCodeMap == null || emailCodeMap.isEmpty()) {
+            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "Email based 2FA code not found on server.");
+        }
+
+        ZimbraLog.account.error("MALDUA-DEBUG EmailTwoFactorCode: '" + emailCodeMap.toString() + "'");
         return false;
     }
 
