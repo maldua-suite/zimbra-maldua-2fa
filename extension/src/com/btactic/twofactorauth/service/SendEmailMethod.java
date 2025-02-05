@@ -21,34 +21,19 @@ package com.btactic.twofactorauth.service;
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.btactic.twofactorauth.ZetaTwoFactorAuth;
-
-import com.zimbra.common.account.Key.AccountBy;
 import com.zimbra.common.service.ServiceException;
 import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.soap.Element;
-import com.zimbra.common.util.ZimbraCookie;
-import com.zimbra.cs.account.auth.AuthContext.Protocol;
 import com.zimbra.cs.account.Account;
-import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
 import com.zimbra.cs.account.AuthToken;
 import com.zimbra.cs.account.AuthToken.Usage;
-import com.zimbra.cs.account.AuthTokenException;
 import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
 import com.zimbra.cs.service.AuthProvider;
-import com.zimbra.cs.service.mail.SetRecoveryAccount;
-import com.zimbra.soap.account.message.DisableTwoFactorAuthResponse;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus;
-import com.zimbra.soap.mail.message.SetRecoveryAccountRequest;
-import com.zimbra.soap.type.Channel;
 import com.zimbra.soap.JaxbUtil;
-import com.zimbra.soap.SoapServlet;
 import com.zimbra.soap.ZimbraSoapContext;
 
 /** SOAP handler to enable two-factor auth.
@@ -56,18 +41,6 @@ import com.zimbra.soap.ZimbraSoapContext;
  *
  */
 public class SendEmailMethod {
-
-    public Element handleDisable(Element request, Map<String, Object> context)
-            throws ServiceException {
-
-        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
-        Account account = AccountDocumentHandler.getRequestedAccount(zsc);
-        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account);
-        DisableTwoFactorAuthResponse response = new DisableTwoFactorAuthResponse();
-        manager.disableTwoFactorAuthEmail();
-        return zsc.jaxbToElement(response);
-
-    }
 
     public Element handleSendTwoFactorAuthCode(Element request, Map<String, Object> context)
             throws ServiceException {
@@ -98,7 +71,7 @@ public class SendEmailMethod {
             sendCode(recoveryEmail,context);
           } catch (ServiceException e) {
             response.setStatus(SendTwoFactorAuthCodeStatus.NOT_SENT);
-          }
+          }AccountConstants
         } else {
           throw ServiceException.FAILURE("Non supported wizard input.", null);
         }
