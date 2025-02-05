@@ -28,6 +28,7 @@ import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
 import com.btactic.twofactorauth.ZetaTwoFactorAuth;
 import com.btactic.twofactorauth.app.ZetaAppSpecificPasswords;
+import com.zimbra.soap.account.message.DisableTwoFactorAuthResponse;
 import com.zimbra.soap.ZimbraSoapContext;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
 
@@ -43,14 +44,37 @@ public class DisableTwoFactorAuth extends AccountDocumentHandler {
         }
 
         if (method.equals(AccountConstants.E_TWO_FACTOR_METHOD_APP)) {
-            TwoFactorAuthMethod twoFactorAuthMethod = new TwoFactorAuthMethod();
-            return twoFactorAuthMethod.handleDisable(request, context);
+            return handleTwoFactorDisable(request, context);
         } else if (method.equals(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL)) {
-            SendEmailMethod sendEmailMethod = new SendEmailMethod();
-            return sendEmailMethod.handleDisable(request, context);
+            return handleEmailDisable(request, context);
         }
 
         throw AuthFailedServiceException.AUTH_FAILED("Unsupported 2FA method");
 
     }
+
+    private Element handleEmailDisable(Element request, Map<String, Object> context)
+            throws ServiceException {
+
+        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
+        Account account = AccountDocumentHandler.getRequestedAccount(zsc);
+        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account);
+        DisableTwoFactorAuthResponse response = new DisableTwoFactorAuthResponse();
+        manager.disableTwoFactorAuthEmail();
+        return zsc.jaxbToElement(response);
+
+    }
+
+    private Element handleTwoFactorDisable(Element request, Map<String, Object> context)
+            throws ServiceException {
+
+        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
+        Account account = AccountDocumentHandler.getRequestedAccount(zsc);
+        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account);
+        DisableTwoFactorAuthResponse response = new DisableTwoFactorAuthResponse();
+        manager.disableTwoFactorAuthApp(true);
+        return zsc.jaxbToElement(response);
+
+    }
+
 }
