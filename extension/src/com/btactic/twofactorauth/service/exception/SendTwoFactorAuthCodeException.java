@@ -27,7 +27,8 @@ import com.zimbra.cs.account.AccountServiceException;
 @SuppressWarnings("serial")
 public class SendTwoFactorAuthCodeException extends AccountServiceException {
     private static enum Codes{
-        CODE_EXPIRED("account.CODE_EXPIRED");
+        CODE_EXPIRED("account.CODE_EXPIRED"),
+        TWO_FACTOR_AUTH_FAILED("account.TWO_FACTOR_AUTH_FAILED");
 
         private String code;
         private Codes(String code) {
@@ -50,6 +51,10 @@ public class SendTwoFactorAuthCodeException extends AccountServiceException {
 
     public static AccountServiceException CODE_EXPIRED(String message) {
         return new SendTwoFactorAuthCodeException("service exception: " + message, Codes.CODE_EXPIRED.toString(), SENDERS_FAULT);
+    }
+
+    public static AccountServiceException TWO_FACTOR_AUTH_FAILED(String message) {
+        return new SendTwoFactorAuthCodeException("service exception: " + message, Codes.TWO_FACTOR_AUTH_FAILED.toString(), SENDERS_FAULT);
     }
 
 }
