@@ -43,7 +43,7 @@ import com.zimbra.soap.ZimbraSoapContext;
 public class SendEmailMethod extends TwoFactorAuthMethod {
 
     @Override
-    protected SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus doMethod(Element request, Map<String, Object> context)
+    protected SendTwoFactorAuthCodeStatus doMethod(Element request, Map<String, Object> context)
             throws ServiceException {
         Provisioning prov = Provisioning.getInstance();
         ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
@@ -82,6 +82,10 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
         } else {
           return SendTwoFactorAuthCodeStatus.NOT_SENT;
         }
+    }
+
+    protected SendTwoFactorAuthCodeAction getAction() {
+      return SendTwoFactorAuthCodeAction.EMAIL;
     }
 
 }

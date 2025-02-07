@@ -31,6 +31,7 @@ import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
 import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest;
+import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest.SendTwoFactorAuthCodeAction;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus;
 import com.zimbra.soap.JaxbUtil;
@@ -55,14 +56,16 @@ public abstract class TwoFactorAuthMethod {
         authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.TWO_FACTOR_AUTH);
 
         SendTwoFactorAuthCodeResponse response = new SendTwoFactorAuthCodeResponse();
-        SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus sendTwoFactorAuthCodeStatus = doMethod(request,context);
+        SendTwoFactorAuthCodeStatus sendTwoFactorAuthCodeStatus = doMethod(request,context);
 
         response.setStatus(sendTwoFactorAuthCodeStatus);
 
         return zsc.jaxbToElement(response);
     }
 
-    protected abstract SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus doMethod(Element request, Map<String, Object> context)
+    protected abstract SendTwoFactorAuthCodeStatus doMethod(Element request, Map<String, Object> context)
             throws ServiceException;
+
+    protected abstract SendTwoFactorAuthCodeAction getAction();
 
 }
