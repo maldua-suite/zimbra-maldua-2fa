@@ -37,10 +37,10 @@ import com.btactic.twofactorauth.service.exception.SendTwoFactorAuthCodeExceptio
 public class SendTwoFactorAuthCode extends AccountDocumentHandler {
 
     List<Class<?>> methodClassList = new ArrayList<Class<?>>();
-
+/*
     methodClassList.add(com.btactic.twofactorauth.service.ResetCodeMethod.class);
     methodClassList.add(com.btactic.twofactorauth.service.SendEmailMethod.class);
-
+*/
     @Override
     public Element handle(Element request, Map<String, Object> context) throws ServiceException {
 
