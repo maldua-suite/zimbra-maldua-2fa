@@ -44,6 +44,11 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
         SendTwoFactorAuthCodeAction action = req.getAction();
         SendTwoFactorAuthCodeResponse response = new SendTwoFactorAuthCodeResponse();
 
+        // After studying SendTwoFactorAuthCodeTag.java:
+        // 'app' method is converted into 'reset' action. Then it should be handled by 'ResetCodeMethod.java'.
+        // 'email' method is converted into 'email' action. Then it should be handled by 'SendEmailMethod.java'.
+        // ResetCodeMethod and SendEmailMethod are classes which are children of TwoFactorAuthMethod class.
+
         if (SendTwoFactorAuthCodeAction.EMAIL.equals(action)) {
             response.setStatus(SendTwoFactorAuthCodeStatus.NOT_SENT);
             SendEmailMethod sendEmailMethod = new SendEmailMethod();
