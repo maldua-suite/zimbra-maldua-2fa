@@ -23,6 +23,6 @@ package com.btactic.twofactorauth.service;
  * @author iraykin
  *
  */
-public class TwoFactorAuthMethod {
+public class ResetCodeMethod extends TwoFactorAuthMethod {
 
 }
