@@ -81,6 +81,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
     boolean hasStoredSecret;
     boolean hasStoredScratchCodes;
     private Map<String, ZetaAppSpecificPassword> appPasswords = new HashMap<String, ZetaAppSpecificPassword>();
+    private String emailDataSeparator=":";
 
     public ZetaTwoFactorAuth(Account account) throws ServiceException {
         this(account, account.getName());
@@ -321,7 +322,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         }
         String decryptedEmailData = decrypt(account, encryptedEmailData);
 
-        String[] parts = decryptedEmailData.split(":");
+        String[] parts = decryptedEmailData.split(emailDataSeparator);
         if (parts.length != 3) {
             throw ServiceException.FAILURE("invalid email code format", null);
         }
@@ -553,7 +554,6 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
     }
 
     public void storeEmailCode(String code) throws ServiceException {
-        String separator = ":";
         String emailCode = code;
         String unKnownData2 = "";
         long timestampLong = System.currentTimeMillis();
@@ -564,7 +564,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         // unKnownData2 : ''
         // timestamp:     '1738424806645'
 
-        String emailData = emailCode + separator + unKnownData2 + separator + timestamp;
+        String emailData = emailCode + emailDataSeparator + unKnownData2 + emailDataSeparator + timestamp;
 
         String encryptedEmailData = encrypt(emailData);
         account.setTwoFactorCodeForEmail(encryptedEmailData);
