@@ -32,6 +32,8 @@ import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest.SendTwoFacto
 import com.zimbra.soap.JaxbUtil;
 import com.zimbra.soap.ZimbraSoapContext;
 
+import com.btactic.twofactorauth.service.exception.SendTwoFactorAuthCodeException;
+
 public class SendTwoFactorAuthCode extends AccountDocumentHandler {
 
     List<Class<?>> methodClassList = new ArrayList<Class<?>>();
@@ -63,8 +65,7 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
             }
         }
 
-        // TODO: Throw an SendTwoFactorAuthCodeException (to be created) exception
-        return zsc.jaxbToElement(response);
+        throw SendTwoFactorAuthCodeException.TWO_FACTOR_AUTH_FAILED("Unsupported 2FA method");
     }
 
     @Override
