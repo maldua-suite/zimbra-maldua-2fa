@@ -63,9 +63,9 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
             Class<?> methodClass = methodClassList.get(i);
             try {
               method = (TwoFactorAuthMethod)methodClass.getDeclaredConstructor().newInstance();
-            } catch NoSuchMethodException {
+            } catch (NoSuchMethodException e) {
               throw SendTwoFactorAuthCodeException.TWO_FACTOR_AUTH_FAILED("(Class) No such method exception.");
-            } catch InstantiationException {
+            } catch (InstantiationException e) {
               throw SendTwoFactorAuthCodeException.TWO_FACTOR_AUTH_FAILED("(Class) Instantiation failed.");
             }
             if (method.getAction().equals(action)) {
