@@ -19,10 +19,22 @@
  */
 package com.btactic.twofactorauth.service;
 
-/** SOAP handler to enable two-factor auth.
- * @author iraykin
- *
- */
+import java.util.Map;
+
+import com.zimbra.common.service.ServiceException;
+import com.zimbra.common.soap.Element;
+import com.zimbra.cs.account.Account;
+import com.zimbra.cs.account.AuthToken;
+import com.zimbra.cs.account.AuthToken.Usage;
+import com.zimbra.cs.account.Provisioning;
+import com.zimbra.cs.service.account.AccountDocumentHandler;
+import com.zimbra.cs.service.AuthProvider;
+import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest;
+import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse;
+import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus;
+import com.zimbra.soap.JaxbUtil;
+import com.zimbra.soap.ZimbraSoapContext;
+
 public class ResetCodeMethod extends TwoFactorAuthMethod {
 
     @Override
