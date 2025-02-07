@@ -39,10 +39,10 @@ import com.btactic.twofactorauth.service.exception.SendTwoFactorAuthCodeExceptio
 public class SendTwoFactorAuthCode extends AccountDocumentHandler {
 
     List<Class<?>> methodClassList = new ArrayList<Class<?>>();
-/*
-    methodClassList.add(com.btactic.twofactorauth.service.ResetCodeMethod.class);
-    methodClassList.add(com.btactic.twofactorauth.service.SendEmailMethod.class);
-*/
+
+    methodClassList.add(ResetCodeMethod.class);
+    methodClassList.add(SendEmailMethod.class);
+
     @Override
     public Element handle(Element request, Map<String, Object> context) throws ServiceException {
 
@@ -71,7 +71,7 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
             }
         }
 
-        throw SendTwoFactorAuthCodeException.TWO_FACTOR_AUTH_FAILED("Unsupported 2FA method");
+        throw SendTwoFactorAuthCodeException.TWO_FACTOR_AUTH_FAILED("Unsupported 2FA action");
     }
 
     @Override
