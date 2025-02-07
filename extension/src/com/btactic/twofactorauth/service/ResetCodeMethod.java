@@ -38,7 +38,7 @@ import com.zimbra.soap.ZimbraSoapContext;
 public class ResetCodeMethod extends TwoFactorAuthMethod {
 
     @Override
-    private SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus doMethod(Element request, Map<String, Object> context)
+    protected SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus doMethod(Element request, Map<String, Object> context)
             throws ServiceException {
         Provisioning prov = Provisioning.getInstance();
         ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
