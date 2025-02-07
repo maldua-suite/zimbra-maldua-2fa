@@ -62,7 +62,7 @@ public abstract class TwoFactorAuthMethod {
         return zsc.jaxbToElement(response);
     }
 
-    private abstract SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus doMethod(Element request, Map<String, Object> context)
+    protected abstract SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus doMethod(Element request, Map<String, Object> context)
             throws ServiceException;
 
 }
