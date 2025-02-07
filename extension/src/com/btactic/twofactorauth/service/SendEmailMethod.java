@@ -40,7 +40,7 @@ import com.zimbra.soap.ZimbraSoapContext;
  * @author iraykin
  *
  */
-public class SendEmailMethod {
+public class SendEmailMethod extends TwoFactorAuthMethod {
 
     public Element handleSendTwoFactorAuthCode(Element request, Map<String, Object> context)
             throws ServiceException {
