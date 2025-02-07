@@ -63,7 +63,6 @@ public abstract class TwoFactorAuthMethod {
     }
 
     protected abstract SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus doMethod(Element request, Map<String, Object> context)
-            throws ServiceException {
-    }
+            throws ServiceException;
 
 }
