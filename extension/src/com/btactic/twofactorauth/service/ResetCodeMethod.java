@@ -25,4 +25,29 @@ package com.btactic.twofactorauth.service;
  */
 public class ResetCodeMethod extends TwoFactorAuthMethod {
 
+    @Override
+    private SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus doMethod(Element request, Map<String, Object> context)
+            throws ServiceException {
+        Provisioning prov = Provisioning.getInstance();
+        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
+        SendTwoFactorAuthCodeRequest req = JaxbUtil.elementToJaxb(request);
+
+        AuthToken at;
+        Account authTokenAcct;
+
+        // TODO: Should we get the AuthToken from the SendTwoFactorAuthCodeRequest
+        // instead of zcs
+        // because the token is sent at the same level of action in `SendTwoFactorAuthCodeTag.java` file
+        // ?
+        at = zsc.getAuthToken();
+        authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.TWO_FACTOR_AUTH);
+
+        // TODO: Add logic for when Reset cannot be done properly.
+        if (true) {
+          return SendTwoFactorAuthCodeStatus.RESET_SUCCEEDED;
+        } else {
+          return SendTwoFactorAuthCodeStatus.RESET_FAILED;
+        }
+    }
+
 }
