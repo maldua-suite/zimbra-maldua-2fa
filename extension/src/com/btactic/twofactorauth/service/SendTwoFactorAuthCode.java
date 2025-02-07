@@ -40,12 +40,12 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
 
     List<Class<?>> methodClassList;
 
-    SendTwoFactorAuthCode() {
+    public SendTwoFactorAuthCode() {
 
+      super();
       methodClassList = new ArrayList<Class<?>>();
       methodClassList.add(ResetCodeMethod.class);
       methodClassList.add(SendEmailMethod.class);
-      super();
 
     }
 
