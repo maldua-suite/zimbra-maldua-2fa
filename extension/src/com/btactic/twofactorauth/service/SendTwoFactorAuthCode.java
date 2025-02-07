@@ -61,9 +61,6 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
         // 'email' method is converted into 'email' action. Then it should be handled by 'SendEmailMethod.java'.
         // ResetCodeMethod and SendEmailMethod are classes which are children of TwoFactorAuthMethod class.
 
-        // TODO: Convert onto an ArrayList of classes which can be instantiated
-        // and thanks to its getMethod you can decide to use them or not
-
         TwoFactorAuthMethod method;
         for (int i = 0; i < methodClassList.size(); i++) {
             Class<?> methodClass = methodClassList.get(i);
