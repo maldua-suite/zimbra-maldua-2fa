@@ -61,7 +61,7 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
         TwoFactorAuthMethod method;
         for (int i = 0; i < methodClassList.size(); i++) {
             Class<?> methodClass = methodClassList.get(i);
-            method = methodClass.getDeclaredConstructor().newInstance();
+            method = (TwoFactorAuthMethod)methodClass.getDeclaredConstructor().newInstance();
             if (method.getAction().equals(action)) {
               return method.handle(request, context);
             }
