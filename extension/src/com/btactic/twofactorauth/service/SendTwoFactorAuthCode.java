@@ -17,6 +17,8 @@
 
 package com.btactic.twofactorauth.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.zimbra.common.service.ServiceException;
@@ -29,12 +31,23 @@ import com.zimbra.cs.account.Account;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest.SendTwoFactorAuthCodeAction;
-import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse;
-import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus;
 import com.zimbra.soap.JaxbUtil;
 import com.zimbra.soap.ZimbraSoapContext;
 
+import com.btactic.twofactorauth.service.exception.SendTwoFactorAuthCodeException;
+
 public class SendTwoFactorAuthCode extends AccountDocumentHandler {
+
+    List<Class<?>> methodClassList;
+
+    public SendTwoFactorAuthCode() {
+
+      super();
+      methodClassList = new ArrayList<Class<?>>();
+      methodClassList.add(ResetCodeMethod.class);
+      methodClassList.add(SendEmailMethod.class);
+
+    }
 
     @Override
     public Element handle(Element request, Map<String, Object> context) throws ServiceException {
@@ -42,26 +55,26 @@ public class SendTwoFactorAuthCode extends AccountDocumentHandler {
         ZimbraSoapContext zsc = getZimbraSoapContext(context);
         SendTwoFactorAuthCodeRequest req = JaxbUtil.elementToJaxb(request);
         SendTwoFactorAuthCodeAction action = req.getAction();
-        SendTwoFactorAuthCodeResponse response = new SendTwoFactorAuthCodeResponse();
 
         // After studying SendTwoFactorAuthCodeTag.java:
         // 'app' method is converted into 'reset' action. Then it should be handled by 'ResetCodeMethod.java'.
         // 'email' method is converted into 'email' action. Then it should be handled by 'SendEmailMethod.java'.
         // ResetCodeMethod and SendEmailMethod are classes which are children of TwoFactorAuthMethod class.
 
-        if (SendTwoFactorAuthCodeAction.EMAIL.equals(action)) {
-            response.setStatus(SendTwoFactorAuthCodeStatus.NOT_SENT);
-            SendEmailMethod sendEmailMethod = new SendEmailMethod();
-            return sendEmailMethod.handleSendTwoFactorAuthCode(request, context);
-        } else if (SendTwoFactorAuthCodeAction.RESET.equals(action)) {
-            response.setStatus(SendTwoFactorAuthCodeStatus.RESET_SUCCEEDED);
-            // TODO: Do something useful with this reset action
-        } else {
-           // Should not reach this point
-           // TODO: Throw an SendTwoFactorAuthCodeException (to be created) exception
+        TwoFactorAuthMethod method;
+        for (int i = 0; i < methodClassList.size(); i++) {
+            Class<?> methodClass = methodClassList.get(i);
+            try {
+              method = (TwoFactorAuthMethod)methodClass.getDeclaredConstructor().newInstance();
+            } catch (Exception e) {
+              throw SendTwoFactorAuthCodeException.TWO_FACTOR_AUTH_FAILED("(Class) New Instance failed.");
+            }
+            if (method.getAction().equals(action)) {
+              return method.handle(request, context);
+            }
         }
 
-        return zsc.jaxbToElement(response);
+        throw SendTwoFactorAuthCodeException.TWO_FACTOR_AUTH_FAILED("Unsupported 2FA action");
     }
 
     @Override

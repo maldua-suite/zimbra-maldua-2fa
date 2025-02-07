@@ -1,7 +1,7 @@
 /*
  * ***** BEGIN LICENSE BLOCK *****
  * Zimbra OSE 2FA Extension
- * Copyright (C) 2023 BTACTIC, S.C.C.L.
+ * Copyright (C) 2025 BTACTIC, S.C.C.L.
  *
  * Zimbra Collaboration Suite Server
  * Copyright (C) 2008, 2009, 2010, 2013, 2014 Zimbra, Inc.
@@ -22,7 +22,6 @@ package com.btactic.twofactorauth.service;
 import java.util.Map;
 
 import com.zimbra.common.service.ServiceException;
-import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.soap.Element;
 import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.AuthToken;
@@ -37,9 +36,10 @@ import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse.SendTwoFact
 import com.zimbra.soap.JaxbUtil;
 import com.zimbra.soap.ZimbraSoapContext;
 
-public abstract class TwoFactorAuthMethod {
+public class ResetCodeMethod extends TwoFactorAuthMethod {
 
-    public Element handle(Element request, Map<String, Object> context)
+    @Override
+    protected SendTwoFactorAuthCodeStatus doMethod(Element request, Map<String, Object> context)
             throws ServiceException {
         Provisioning prov = Provisioning.getInstance();
         ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
@@ -55,17 +55,16 @@ public abstract class TwoFactorAuthMethod {
         at = zsc.getAuthToken();
         authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.TWO_FACTOR_AUTH);
 
-        SendTwoFactorAuthCodeResponse response = new SendTwoFactorAuthCodeResponse();
-        SendTwoFactorAuthCodeStatus sendTwoFactorAuthCodeStatus = doMethod(request,context);
-
-        response.setStatus(sendTwoFactorAuthCodeStatus);
-
-        return zsc.jaxbToElement(response);
+        // TODO: Add logic for when Reset cannot be done properly.
+        if (true) {
+          return SendTwoFactorAuthCodeStatus.RESET_SUCCEEDED;
+        } else {
+          return SendTwoFactorAuthCodeStatus.RESET_FAILED;
+        }
     }
 
-    protected abstract SendTwoFactorAuthCodeStatus doMethod(Element request, Map<String, Object> context)
-            throws ServiceException;
-
-    protected abstract SendTwoFactorAuthCodeAction getAction();
+    protected SendTwoFactorAuthCodeAction getAction() {
+      return SendTwoFactorAuthCodeAction.RESET;
+    }
 
 }

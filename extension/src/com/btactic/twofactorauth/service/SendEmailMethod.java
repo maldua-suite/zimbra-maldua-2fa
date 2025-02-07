@@ -31,6 +31,7 @@ import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
 import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest;
+import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest.SendTwoFactorAuthCodeAction;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus;
 import com.zimbra.soap.JaxbUtil;
@@ -40,9 +41,10 @@ import com.zimbra.soap.ZimbraSoapContext;
  * @author iraykin
  *
  */
-public class SendEmailMethod {
+public class SendEmailMethod extends TwoFactorAuthMethod {
 
-    public Element handleSendTwoFactorAuthCode(Element request, Map<String, Object> context)
+    @Override
+    protected SendTwoFactorAuthCodeStatus doMethod(Element request, Map<String, Object> context)
             throws ServiceException {
         Provisioning prov = Provisioning.getInstance();
         ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
@@ -57,8 +59,6 @@ public class SendEmailMethod {
         // ?
         at = zsc.getAuthToken();
         authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.TWO_FACTOR_AUTH);
-
-        SendTwoFactorAuthCodeResponse response = new SendTwoFactorAuthCodeResponse();
 
         String recoveryEmail = authTokenAcct.getPrefPasswordRecoveryAddress();
 
@@ -77,9 +77,16 @@ public class SendEmailMethod {
         }
 */
 
-        response.setStatus(SendTwoFactorAuthCodeStatus.SENT);
+        // TODO: Add logic for when sending email cannot be done properly.
+        if (true) {
+          return SendTwoFactorAuthCodeStatus.SENT;
+        } else {
+          return SendTwoFactorAuthCodeStatus.NOT_SENT;
+        }
+    }
 
-        return zsc.jaxbToElement(response);
+    protected SendTwoFactorAuthCodeAction getAction() {
+      return SendTwoFactorAuthCodeAction.EMAIL;
     }
 
 }
