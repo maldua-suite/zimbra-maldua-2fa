@@ -552,6 +552,24 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         lockoutPolicy.failedSecondFactorLogin();
     }
 
+    public void storeEmailCode(String code) throws ServiceException {
+        String separator = ":";
+        String emailCode = code;
+        String unKnownData2 = "";
+        long timestampLong = System.currentTimeMillis();
+        String timestamp = Long.toString(timestampLong);
+        // Decryption example:
+        // decryptedEmailData: '6912720::1738424806645'
+        // emailCode :    '6912720'
+        // unKnownData2 : ''
+        // timestamp:     '1738424806645'
+
+        String emailData = emailCode + separator + unKnownData2 + separator + timestamp;
+
+        String encryptedEmailData = encrypt(emailData);
+        account.setTwoFactorCodeForEmail(encryptedEmailData);
+    }
+
     public static class TwoFactorPasswordChange extends ChangePasswordListener {
         public static final String LISTENER_NAME = "twofactorpasswordchange";
 
