@@ -31,6 +31,7 @@ import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
 import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest;
+import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest.SendTwoFactorAuthCodeAction;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus;
 import com.zimbra.soap.JaxbUtil;
