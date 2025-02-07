@@ -61,24 +61,22 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
         authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.TWO_FACTOR_AUTH);
 
         String recoveryEmail = authTokenAcct.getPrefPasswordRecoveryAddress();
-
-        // authTokenAcct.setTwoFactorCodeForEmail("123444"); // Hard coded value to test this
-        // TODO: Save with a Map
-
-/*
+        boolean emailIsSent = false;
         if (recoveryEmail != null) {
           try {
-            sendCode(recoveryEmail,context);
+            String code = "123444";
+            storeCode(code);
+            // sendCode(recoveryEmail,code);
+            emailIsSent = true;
           } catch (ServiceException e) {
-            response.setStatus(SendTwoFactorAuthCodeStatus.NOT_SENT);
-          }AccountConstants
+            emailIsSent = false;
+          }
         } else {
           throw ServiceException.FAILURE("Non supported wizard input.", null);
         }
-*/
 
         // TODO: Add logic for when sending email cannot be done properly.
-        if (true) {
+        if (emailIsSent) {
           return SendTwoFactorAuthCodeStatus.SENT;
         } else {
           return SendTwoFactorAuthCodeStatus.NOT_SENT;
