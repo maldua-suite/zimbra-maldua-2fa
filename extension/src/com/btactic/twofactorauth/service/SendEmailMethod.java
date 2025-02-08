@@ -97,7 +97,7 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
         if (ownerAcctDisplayName == null) {
             ownerAcctDisplayName = account.getName();
         }
-        String subject = L10nUtil.getMessage(MsgKey.twoFactorAuthEmailSubject, locale, ownerAcctDisplayName);
+        String subject = L10nUtil.getMessage(MsgKey.twoFactorAuthCodeEmailSubject, locale, ownerAcctDisplayName);
         String charset = account.getAttr(Provisioning.A_zimbraPrefMailDefaultCharset, MimeConstants.P_CHARSET_UTF8);
         try {
             DateFormat format = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
@@ -112,9 +112,9 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
                         toEmail,
                         code);
             }
-            String mimePartText = L10nUtil.getMessage(MsgKey.twoFactorAuthEmailBodyText, locale,
+            String mimePartText = L10nUtil.getMessage(MsgKey.twoFactorAuthCodeEmailBodyText, locale,
                     recoveryCodeMap.get(CodeConstants.CODE.toString()), dateTime);
-            String mimePartHtml = L10nUtil.getMessage(MsgKey.twoFactorAuthEmailBodyHtml, locale,
+            String mimePartHtml = L10nUtil.getMessage(MsgKey.twoFactorAuthCodeEmailBodyHtml, locale,
                     recoveryCodeMap.get(CodeConstants.CODE.toString()), dateTime);
             MimeMultipart mmp = AccountUtil.generateMimeMultipart(mimePartText, mimePartHtml, null);
             MimeMessage mm = AccountUtil.generateMimeMessage(account, account, subject, charset, null, null,
