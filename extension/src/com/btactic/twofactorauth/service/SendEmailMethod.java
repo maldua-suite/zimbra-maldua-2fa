@@ -70,8 +70,9 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
           try {
             ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(authTokenAcct);
             String code = manager.storeEmailCode();
-            ZimbraLog.account.error("MALDUA-DEBUG - Email Code: '" + code + "'");
-            // sendCode(recoveryEmail,code);
+            Mailbox mbox = getRequestedMailbox(zsc);
+            OperationContext octxt = getOperationContext(zsc, context);
+            sendEmail(authTokenAcct, mbox, code, zsc, octxt);
             emailIsSent = true;
           } catch (ServiceException e) {
             emailIsSent = false;
@@ -85,6 +86,45 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
           return SendTwoFactorAuthCodeStatus.SENT;
         } else {
           return SendTwoFactorAuthCodeStatus.NOT_SENT;
+        }
+    }
+
+    public void sendEmail(Account account, Mailbox mbox, String code,
+            ZimbraSoapContext zsc, OperationContext octxt) throws ServiceException {
+        // Inspired from sendAndStoreTwoFactorAuthAccountCode function from EmailChannel.java file
+        Locale locale = account.getLocale();
+        String ownerAcctDisplayName = account.getDisplayName();
+        if (ownerAcctDisplayName == null) {
+            ownerAcctDisplayName = account.getName();
+        }
+        String subject = L10nUtil.getMessage(MsgKey.twoFactorAuthEmailSubject, locale, ownerAcctDisplayName);
+        String charset = account.getAttr(Provisioning.A_zimbraPrefMailDefaultCharset, MimeConstants.P_CHARSET_UTF8);
+        try {
+            DateFormat format = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
+            format.setTimeZone(TimeZone.getTimeZone(Util.getAccountTimeZone(account).getID()));
+            String dateTime = format.format(Long.valueOf(recoveryCodeMap.get(CodeConstants.EXPIRY_TIME.toString())));
+            if (ZimbraLog.passwordreset.isDebugEnabled()) {
+                ZimbraLog.passwordreset.debug(
+                        "sendTwoFactorAuthEmailVerificationCode: Expiry of two-factor auth email address verification code sent to %s: %s",
+                        recoveryCodeMap.get(CodeConstants.EMAIL.toString()), dateTime);
+                ZimbraLog.passwordreset.debug(
+                        "sendTwoFactorAuthEmailVerificationCode: Last 3 characters of two-factor auth email verification code sent to %s: %s",
+                        recoveryCodeMap.get(CodeConstants.EMAIL.toString()),
+                        recoveryCodeMap.get(CodeConstants.CODE.toString()).substring(5));
+            }
+            String mimePartText = L10nUtil.getMessage(MsgKey.twoFactorAuthEmailBodyText, locale,
+                    recoveryCodeMap.get(CodeConstants.CODE.toString()), dateTime);
+            String mimePartHtml = L10nUtil.getMessage(MsgKey.twoFactorAuthEmailBodyHtml, locale,
+                    recoveryCodeMap.get(CodeConstants.CODE.toString()), dateTime);
+            MimeMultipart mmp = AccountUtil.generateMimeMultipart(mimePartText, mimePartHtml, null);
+            MimeMessage mm = AccountUtil.generateMimeMessage(account, account, subject, charset, null, null,
+                    recoveryCodeMap.get(CodeConstants.EMAIL.toString()), mmp);
+            mbox.getMailSender().sendMimeMessage(octxt, mbox, false, mm, null, null, null, null, false);
+        } catch (MessagingException e) {
+            ZimbraLog.passwordreset.warn("Failed to send verification code to email ID: '"
+                    + recoveryCodeMap.get(CodeConstants.EMAIL.toString()) + "'", e);
+            throw ServiceException.FAILURE("Failed to send verification code to email ID: "
+                    + recoveryCodeMap.get(CodeConstants.EMAIL.toString()), e);
         }
     }
 
