@@ -49,6 +49,7 @@ import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest.SendTwoFactorAuthCodeAction;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus;
+import com.zimbra.soap.DocumentHandler;
 import com.zimbra.soap.JaxbUtil;
 import com.zimbra.soap.ZimbraSoapContext;
 
@@ -89,8 +90,8 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
             String code = manager.getEmailCode();
             long expiryTime = manager.getEmailExpiryTime();
 
-            Mailbox mbox = getRequestedMailbox(zsc);
-            OperationContext octxt = getOperationContext(zsc, context);
+            Mailbox mbox = DocumentHandler.getRequestedMailbox(zsc);
+            OperationContext octxt = DocumentHandler.getOperationContext(zsc, context);
             sendEmail(code, expiryTime, recoveryEmail, authTokenAcct, mbox, zsc, octxt);
 
             emailIsSent = true;
