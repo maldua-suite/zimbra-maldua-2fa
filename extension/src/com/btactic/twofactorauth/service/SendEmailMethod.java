@@ -72,7 +72,7 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
             String code = manager.storeEmailCode();
             Mailbox mbox = getRequestedMailbox(zsc);
             OperationContext octxt = getOperationContext(zsc, context);
-            sendEmail(authTokenAcct, mbox, code, zsc, octxt);
+            sendEmail(authTokenAcct, recoveryEmail, mbox, code, zsc, octxt);
             emailIsSent = true;
           } catch (ServiceException e) {
             emailIsSent = false;
@@ -89,7 +89,7 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
         }
     }
 
-    public void sendEmail(Account account, Mailbox mbox, String code,
+    public void sendEmail(Account account, String toEmail, Mailbox mbox, String code,
             ZimbraSoapContext zsc, OperationContext octxt) throws ServiceException {
         // Inspired from sendAndStoreTwoFactorAuthAccountCode function from EmailChannel.java file
         Locale locale = account.getLocale();
@@ -106,11 +106,11 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
             if (ZimbraLog.passwordreset.isDebugEnabled()) {
                 ZimbraLog.passwordreset.debug(
                         "sendTwoFactorAuthEmailVerificationCode: Expiry of two-factor auth email address verification code sent to %s: %s",
-                        recoveryCodeMap.get(CodeConstants.EMAIL.toString()), dateTime);
+                        toEmail, dateTime);
                 ZimbraLog.passwordreset.debug(
                         "sendTwoFactorAuthEmailVerificationCode: Last 3 characters of two-factor auth email verification code sent to %s: %s",
-                        recoveryCodeMap.get(CodeConstants.EMAIL.toString()),
-                        recoveryCodeMap.get(CodeConstants.CODE.toString()).substring(5));
+                        toEmail,
+                        code);
             }
             String mimePartText = L10nUtil.getMessage(MsgKey.twoFactorAuthEmailBodyText, locale,
                     recoveryCodeMap.get(CodeConstants.CODE.toString()), dateTime);
@@ -118,13 +118,13 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
                     recoveryCodeMap.get(CodeConstants.CODE.toString()), dateTime);
             MimeMultipart mmp = AccountUtil.generateMimeMultipart(mimePartText, mimePartHtml, null);
             MimeMessage mm = AccountUtil.generateMimeMessage(account, account, subject, charset, null, null,
-                    recoveryCodeMap.get(CodeConstants.EMAIL.toString()), mmp);
+                    toEmail, mmp);
             mbox.getMailSender().sendMimeMessage(octxt, mbox, false, mm, null, null, null, null, false);
         } catch (MessagingException e) {
             ZimbraLog.passwordreset.warn("Failed to send verification code to email ID: '"
-                    + recoveryCodeMap.get(CodeConstants.EMAIL.toString()) + "'", e);
+                    + toEmail + "'", e);
             throw ServiceException.FAILURE("Failed to send verification code to email ID: "
-                    + recoveryCodeMap.get(CodeConstants.EMAIL.toString()), e);
+                    + toEmail, e);
         }
     }
 
