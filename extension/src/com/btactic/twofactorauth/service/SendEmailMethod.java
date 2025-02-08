@@ -39,6 +39,8 @@ import com.zimbra.soap.ZimbraSoapContext;
 
 import com.btactic.twofactorauth.ZetaTwoFactorAuth;
 
+import com.zimbra.common.util.ZimbraLog;
+
 /** SOAP handler to enable two-factor auth.
  * @author iraykin
  *
@@ -66,9 +68,9 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
         boolean emailIsSent = false;
         if (recoveryEmail != null) {
           try {
-            String code = "1234444";
             ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(authTokenAcct);
-            manager.storeEmailCode(code);
+            String code = manager.storeEmailCode();
+            ZimbraLog.account.error("MALDUA-DEBUG - Email Code: '" + code + "'");
             // sendCode(recoveryEmail,code);
             emailIsSent = true;
           } catch (ServiceException e) {

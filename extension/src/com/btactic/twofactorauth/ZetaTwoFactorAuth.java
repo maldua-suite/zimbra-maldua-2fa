@@ -65,6 +65,8 @@ import com.zimbra.cs.account.ldap.ChangePasswordListener;
 import com.zimbra.cs.account.ldap.LdapLockoutPolicy;
 import com.zimbra.cs.ldap.LdapDateUtil;
 
+import org.apache.commons.lang.RandomStringUtils;
+
 /**
  * This class is the main entry point for two-factor authentication.
  *
@@ -553,8 +555,9 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         lockoutPolicy.failedSecondFactorLogin();
     }
 
-    public void storeEmailCode(String code) throws ServiceException {
-        String emailCode = code;
+    public String storeEmailCode() throws ServiceException {
+        String emailCode = RandomStringUtils.randomNumeric(7);
+
         String unKnownData2 = "";
         long timestampLong = System.currentTimeMillis();
         String timestamp = Long.toString(timestampLong);
@@ -568,6 +571,8 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
 
         String encryptedEmailData = encrypt(emailData);
         account.setTwoFactorCodeForEmail(encryptedEmailData);
+
+        return emailCode;
     }
 
     public static class TwoFactorPasswordChange extends ChangePasswordListener {
