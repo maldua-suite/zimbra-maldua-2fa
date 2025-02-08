@@ -574,6 +574,62 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         account.setTwoFactorCodeForEmail(encryptedEmailData);
     }
 
+    public String getEmailCode() throws ServiceException {
+        String encryptedEmailData = account.getTwoFactorCodeForEmail();
+        if (encryptedEmailData == null || encryptedEmailData.isEmpty()) {
+            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "Email based 2FA code not found on server.");
+        }
+        String decryptedEmailData = decrypt(account, encryptedEmailData);
+
+        String[] parts = decryptedEmailData.split(emailDataSeparator);
+        if (parts.length != 3) {
+            throw ServiceException.FAILURE("invalid email code format", null);
+        }
+        String emailCode = parts[0];
+        String unKnownData2 = parts[1];
+        String timestamp = parts[2];
+        // Decryption example:
+        // decryptedEmailData: '6912720::1738424806645'
+        // emailCode :    '6912720'
+        // unKnownData2 : ''
+        // timestamp:     '1738424806645'
+
+        return emailCode;
+    }
+
+    public long getEmailExpiryTime() throws ServiceException {
+        String encryptedEmailData = account.getTwoFactorCodeForEmail();
+        if (encryptedEmailData == null || encryptedEmailData.isEmpty()) {
+            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "Email based 2FA code not found on server.");
+        }
+        String decryptedEmailData = decrypt(account, encryptedEmailData);
+
+        String[] parts = decryptedEmailData.split(emailDataSeparator);
+        if (parts.length != 3) {
+            throw ServiceException.FAILURE("invalid email code format", null);
+        }
+        String emailCode = parts[0];
+        String unKnownData2 = parts[1];
+        String timestamp = parts[2];
+        // Decryption example:
+        // decryptedEmailData: '6912720::1738424806645'
+        // emailCode :    '6912720'
+        // unKnownData2 : ''
+        // timestamp:     '1738424806645'
+
+        long emailTimeStamp;
+        try {
+          emailTimeStamp = Long.parseLong(timestamp);
+        } catch (NumberFormatException e) {
+            throw ServiceException.FAILURE("invalid email code timestamp format", null);
+        }
+
+        long emailLifeTime = account.getTwoFactorCodeLifetimeForEmail();
+        long emailExpiryTime = emailTimeStamp + emailLifeTime;
+
+        return emailExpiryTime;
+    }
+
     public static class TwoFactorPasswordChange extends ChangePasswordListener {
         public static final String LISTENER_NAME = "twofactorpasswordchange";
 
