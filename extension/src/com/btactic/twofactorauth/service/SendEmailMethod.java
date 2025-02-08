@@ -69,10 +69,15 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
         if (recoveryEmail != null) {
           try {
             ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(authTokenAcct);
-            String code = manager.storeEmailCode();
+
+            manager.storeEmailCode();
+            String code = manager.getEmailCode();
+            long expiryTime = manager.getEmailExpiryTime();
+
             Mailbox mbox = getRequestedMailbox(zsc);
             OperationContext octxt = getOperationContext(zsc, context);
-            sendEmail(authTokenAcct, recoveryEmail, mbox, code, zsc, octxt);
+            sendEmail(code, expiryTime, recoveryEmail, authTokenAcct, mbox, zsc, octxt);
+
             emailIsSent = true;
           } catch (ServiceException e) {
             emailIsSent = false;
@@ -89,7 +94,7 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
         }
     }
 
-    public void sendEmail(Account account, String toEmail, Mailbox mbox, String code,
+    public void sendEmail(String code, long expiryTime, String toEmail, Account account, Mailbox mbox,
             ZimbraSoapContext zsc, OperationContext octxt) throws ServiceException {
         // Inspired from sendAndStoreTwoFactorAuthAccountCode function from EmailChannel.java file
         Locale locale = account.getLocale();
@@ -102,28 +107,28 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
         try {
             DateFormat format = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
             format.setTimeZone(TimeZone.getTimeZone(Util.getAccountTimeZone(account).getID()));
-            String dateTime = format.format(Long.valueOf(recoveryCodeMap.get(CodeConstants.EXPIRY_TIME.toString())));
-            if (ZimbraLog.passwordreset.isDebugEnabled()) {
-                ZimbraLog.passwordreset.debug(
-                        "sendTwoFactorAuthEmailVerificationCode: Expiry of two-factor auth email address verification code sent to %s: %s",
+            String dateTime = format.format(expiryTime);
+            if (ZimbraLog.misc.isDebugEnabled()) {
+                ZimbraLog.misc.debug(
+                        "TwoFactorAuth:SendEmailMethod:SendEmail: Expiry of two-factor auth email address verification code sent to %s: %s",
                         toEmail, dateTime);
-                ZimbraLog.passwordreset.debug(
-                        "sendTwoFactorAuthEmailVerificationCode: Last 3 characters of two-factor auth email verification code sent to %s: %s",
+                ZimbraLog.misc.debug(
+                        "TwoFactorAuth:SendEmailMethod:SendEmail: Last 3 characters of two-factor auth email verification code sent to %s: %s",
                         toEmail,
-                        code);
+                        code.substring(5));
             }
             String mimePartText = L10nUtil.getMessage(MsgKey.twoFactorAuthCodeEmailBodyText, locale,
-                    recoveryCodeMap.get(CodeConstants.CODE.toString()), dateTime);
+                    code, dateTime);
             String mimePartHtml = L10nUtil.getMessage(MsgKey.twoFactorAuthCodeEmailBodyHtml, locale,
-                    recoveryCodeMap.get(CodeConstants.CODE.toString()), dateTime);
+                    code, dateTime);
             MimeMultipart mmp = AccountUtil.generateMimeMultipart(mimePartText, mimePartHtml, null);
             MimeMessage mm = AccountUtil.generateMimeMessage(account, account, subject, charset, null, null,
                     toEmail, mmp);
             mbox.getMailSender().sendMimeMessage(octxt, mbox, false, mm, null, null, null, null, false);
         } catch (MessagingException e) {
-            ZimbraLog.passwordreset.warn("Failed to send verification code to email ID: '"
+            ZimbraLog.misc.warn("Failed to send two-factor auth email code to email ID: '"
                     + toEmail + "'", e);
-            throw ServiceException.FAILURE("Failed to send verification code to email ID: "
+            throw ServiceException.FAILURE("Failed to send two-factor auth email code to email ID: "
                     + toEmail, e);
         }
     }

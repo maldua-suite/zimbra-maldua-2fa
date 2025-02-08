@@ -555,7 +555,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         lockoutPolicy.failedSecondFactorLogin();
     }
 
-    public String storeEmailCode() throws ServiceException {
+    public void storeEmailCode() throws ServiceException {
         int emailCodeLength = getGlobalConfig().getTwoFactorAuthEmailCodeLength();
         String emailCode = RandomStringUtils.randomNumeric(emailCodeLength);
 
@@ -572,8 +572,6 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
 
         String encryptedEmailData = encrypt(emailData);
         account.setTwoFactorCodeForEmail(encryptedEmailData);
-
-        return emailCode;
     }
 
     public static class TwoFactorPasswordChange extends ChangePasswordListener {
