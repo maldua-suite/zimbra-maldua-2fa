@@ -556,7 +556,8 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
     }
 
     public String storeEmailCode() throws ServiceException {
-        String emailCode = RandomStringUtils.randomNumeric(7);
+        int emailCodeLength = getGlobalConfig().getTwoFactorAuthEmailCodeLength();
+        String emailCode = RandomStringUtils.randomNumeric(emailCodeLength);
 
         String unKnownData2 = "";
         long timestampLong = System.currentTimeMillis();
