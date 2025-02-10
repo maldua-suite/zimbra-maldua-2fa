@@ -22,11 +22,13 @@ package com.btactic.twofactorauth.service;
 import java.util.Map;
 
 import com.zimbra.common.service.ServiceException;
+import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.soap.Element;
 import com.zimbra.cs.account.Account;
-import com.zimbra.soap.account.message.DisableTwoFactorAuthResponse;
+import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
 import com.btactic.twofactorauth.ZetaTwoFactorAuth;
 import com.btactic.twofactorauth.app.ZetaAppSpecificPasswords;
+import com.zimbra.soap.account.message.DisableTwoFactorAuthResponse;
 import com.zimbra.soap.ZimbraSoapContext;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
 
@@ -34,13 +36,45 @@ public class DisableTwoFactorAuth extends AccountDocumentHandler {
 
     @Override
     public Element handle(Element request, Map<String, Object> context) throws ServiceException {
-        ZimbraSoapContext zsc = getZimbraSoapContext(context);
-        Account account = getRequestedAccount(zsc);
+
+        Element methodEl = request.getOptionalElement(AccountConstants.E_METHOD);
+        String method = null;
+        if (methodEl != null) {
+            method = methodEl.getText();
+        }
+
+        if (method.equals(AccountConstants.E_TWO_FACTOR_METHOD_APP)) {
+            return handleTwoFactorDisable(request, context);
+        } else if (method.equals(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL)) {
+            return handleEmailDisable(request, context);
+        }
+
+        throw AuthFailedServiceException.AUTH_FAILED("Unsupported 2FA method");
+
+    }
+
+    private Element handleEmailDisable(Element request, Map<String, Object> context)
+            throws ServiceException {
+
+        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
+        Account account = AccountDocumentHandler.getRequestedAccount(zsc);
         ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account);
         DisableTwoFactorAuthResponse response = new DisableTwoFactorAuthResponse();
-        manager.disableTwoFactorAuth(true);
-        ZetaAppSpecificPasswords appSpecificPasswordsManager = new ZetaAppSpecificPasswords(account);
-        appSpecificPasswordsManager.revokeAll();
+        manager.disableTwoFactorAuthEmail();
         return zsc.jaxbToElement(response);
+
     }
+
+    private Element handleTwoFactorDisable(Element request, Map<String, Object> context)
+            throws ServiceException {
+
+        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
+        Account account = AccountDocumentHandler.getRequestedAccount(zsc);
+        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account);
+        DisableTwoFactorAuthResponse response = new DisableTwoFactorAuthResponse();
+        manager.disableTwoFactorAuthApp(true);
+        return zsc.jaxbToElement(response);
+
+    }
+
 }
