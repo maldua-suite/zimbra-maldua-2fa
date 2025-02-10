@@ -33,6 +33,7 @@ import com.google.common.base.Strings;
 import com.zimbra.common.auth.twofactor.AuthenticatorConfig;
 import com.zimbra.common.auth.twofactor.TwoFactorOptions.CodeLength;
 import com.zimbra.common.auth.twofactor.TwoFactorOptions.HashAlgorithm;
+import com.zimbra.cs.account.ForgetPasswordException;
 import com.zimbra.cs.account.auth.twofactor.AppSpecificPasswords;
 import com.zimbra.cs.account.auth.twofactor.TrustedDevices;
 import com.zimbra.cs.account.auth.twofactor.TwoFactorAuth;
@@ -52,6 +53,7 @@ import com.btactic.twofactorauth.app.ZetaAppSpecificPasswordData;
 import com.btactic.twofactorauth.app.ZetaAppSpecificPasswords;
 import com.btactic.twofactorauth.credentials.CredentialGenerator;
 import com.btactic.twofactorauth.credentials.TOTPCredentials;
+import com.btactic.twofactorauth.service.exception.SendTwoFactorAuthCodeException;
 import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDevices;
 import com.btactic.twofactorauth.ZetaScratchCodes;
 import com.zimbra.cs.account.Config;
@@ -62,6 +64,8 @@ import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDeviceToken;
 import com.zimbra.cs.account.ldap.ChangePasswordListener;
 import com.zimbra.cs.account.ldap.LdapLockoutPolicy;
 import com.zimbra.cs.ldap.LdapDateUtil;
+
+import org.apache.commons.lang.RandomStringUtils;
 
 /**
  * This class is the main entry point for two-factor authentication.
@@ -79,6 +83,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
     boolean hasStoredSecret;
     boolean hasStoredScratchCodes;
     private Map<String, ZetaAppSpecificPassword> appPasswords = new HashMap<String, ZetaAppSpecificPassword>();
+    private String emailDataSeparator=":";
 
     public ZetaTwoFactorAuth(Account account) throws ServiceException {
         this(account, account.getName());
@@ -312,11 +317,54 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         return config;
     }
 
+    private boolean checkEmailCode(String code) throws ServiceException {
+        String encryptedEmailData = account.getTwoFactorCodeForEmail();
+        if (encryptedEmailData == null || encryptedEmailData.isEmpty()) {
+            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "Email based 2FA code not found on server.");
+        }
+        String decryptedEmailData = decrypt(account, encryptedEmailData);
+
+        String[] parts = decryptedEmailData.split(emailDataSeparator);
+        if (parts.length != 3) {
+            throw ServiceException.FAILURE("invalid email code format", null);
+        }
+        String emailCode = parts[0];
+        String unKnownData2 = parts[1];
+        String timestamp = parts[2];
+        // Decryption example:
+        // decryptedEmailData: '6912720::1738424806645'
+        // emailCode :    '6912720'
+        // unKnownData2 : ''
+        // timestamp:     '1738424806645'
+
+        long emailTimeStamp;
+        try {
+          emailTimeStamp = Long.parseLong(timestamp);
+        } catch (NumberFormatException e) {
+            throw ServiceException.FAILURE("invalid email code timestamp format", null);
+        }
+
+        long emailLifeTime = account.getTwoFactorCodeLifetimeForEmail();
+        long emailExpiryTime = emailTimeStamp + emailLifeTime;
+        boolean emailCodeIsExpired = System.currentTimeMillis() > emailExpiryTime;
+
+        if (emailCodeIsExpired) {
+            throw SendTwoFactorAuthCodeException.CODE_EXPIRED("The email 2FA code is expired.");
+        }
+
+        return (emailCode.equals(code));
+    }
+
     private boolean checkTOTPCode(String code) throws ServiceException {
         long curTime = System.currentTimeMillis() / 1000;
         AuthenticatorConfig config = getAuthenticatorConfig();
         TOTPAuthenticator auth = new TOTPAuthenticator(config);
         return auth.validateCode(secret, curTime, code, getSecretEncoding());
+    }
+
+    private boolean isEmailCode(String code) throws ServiceException {
+      int emailCodeLength = getGlobalConfig().getTwoFactorAuthEmailCodeLength();
+      return code.length() == emailCodeLength;
     }
 
     private Boolean isScratchCode(String code) throws ServiceException {
@@ -348,6 +396,8 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
 
         if (isTOTPCode(code)) {
           success = checkTOTPCode(code);
+        } else if (isEmailCode(code)) {
+          success = checkEmailCode(code);
         } else if (isScratchCode(code)) {
           ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
           success = scratchCodesManager.checkScratchCodes(code);
@@ -503,6 +553,81 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
     private void failedLogin() throws ServiceException {
         LdapLockoutPolicy lockoutPolicy = new LdapLockoutPolicy(Provisioning.getInstance(), account);
         lockoutPolicy.failedSecondFactorLogin();
+    }
+
+    public void storeEmailCode() throws ServiceException {
+        int emailCodeLength = getGlobalConfig().getTwoFactorAuthEmailCodeLength();
+        String emailCode = RandomStringUtils.randomNumeric(emailCodeLength);
+
+        String unKnownData2 = "";
+        long timestampLong = System.currentTimeMillis();
+        String timestamp = Long.toString(timestampLong);
+        // Decryption example:
+        // decryptedEmailData: '6912720::1738424806645'
+        // emailCode :    '6912720'
+        // unKnownData2 : ''
+        // timestamp:     '1738424806645'
+
+        String emailData = emailCode + emailDataSeparator + unKnownData2 + emailDataSeparator + timestamp;
+
+        String encryptedEmailData = encrypt(emailData);
+        account.setTwoFactorCodeForEmail(encryptedEmailData);
+    }
+
+    public String getEmailCode() throws ServiceException {
+        String encryptedEmailData = account.getTwoFactorCodeForEmail();
+        if (encryptedEmailData == null || encryptedEmailData.isEmpty()) {
+            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "Email based 2FA code not found on server.");
+        }
+        String decryptedEmailData = decrypt(account, encryptedEmailData);
+
+        String[] parts = decryptedEmailData.split(emailDataSeparator);
+        if (parts.length != 3) {
+            throw ServiceException.FAILURE("invalid email code format", null);
+        }
+        String emailCode = parts[0];
+        String unKnownData2 = parts[1];
+        String timestamp = parts[2];
+        // Decryption example:
+        // decryptedEmailData: '6912720::1738424806645'
+        // emailCode :    '6912720'
+        // unKnownData2 : ''
+        // timestamp:     '1738424806645'
+
+        return emailCode;
+    }
+
+    public long getEmailExpiryTime() throws ServiceException {
+        String encryptedEmailData = account.getTwoFactorCodeForEmail();
+        if (encryptedEmailData == null || encryptedEmailData.isEmpty()) {
+            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "Email based 2FA code not found on server.");
+        }
+        String decryptedEmailData = decrypt(account, encryptedEmailData);
+
+        String[] parts = decryptedEmailData.split(emailDataSeparator);
+        if (parts.length != 3) {
+            throw ServiceException.FAILURE("invalid email code format", null);
+        }
+        String emailCode = parts[0];
+        String unKnownData2 = parts[1];
+        String timestamp = parts[2];
+        // Decryption example:
+        // decryptedEmailData: '6912720::1738424806645'
+        // emailCode :    '6912720'
+        // unKnownData2 : ''
+        // timestamp:     '1738424806645'
+
+        long emailTimeStamp;
+        try {
+          emailTimeStamp = Long.parseLong(timestamp);
+        } catch (NumberFormatException e) {
+            throw ServiceException.FAILURE("invalid email code timestamp format", null);
+        }
+
+        long emailLifeTime = account.getTwoFactorCodeLifetimeForEmail();
+        long emailExpiryTime = emailTimeStamp + emailLifeTime;
+
+        return emailExpiryTime;
     }
 
     public static class TwoFactorPasswordChange extends ChangePasswordListener {
