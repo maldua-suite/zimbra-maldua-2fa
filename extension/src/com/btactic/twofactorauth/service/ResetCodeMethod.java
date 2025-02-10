@@ -22,6 +22,7 @@ package com.btactic.twofactorauth.service;
 import java.util.Map;
 
 import com.zimbra.common.service.ServiceException;
+import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.soap.Element;
 import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.AuthToken;
@@ -35,6 +36,8 @@ import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus;
 import com.zimbra.soap.JaxbUtil;
 import com.zimbra.soap.ZimbraSoapContext;
+
+import com.btactic.twofactorauth.ZetaTwoFactorAuth;
 
 public class ResetCodeMethod extends TwoFactorAuthMethod {
 
@@ -54,9 +57,9 @@ public class ResetCodeMethod extends TwoFactorAuthMethod {
         // ?
         at = zsc.getAuthToken();
         authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.TWO_FACTOR_AUTH);
+        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(authTokenAcct);
 
-        // TODO: Add logic for when Reset cannot be done properly.
-        if (true) {
+        if (manager.isAllowedMethod(AccountConstants.E_TWO_FACTOR_METHOD_APP)) {
           return SendTwoFactorAuthCodeStatus.RESET_SUCCEEDED;
         } else {
           return SendTwoFactorAuthCodeStatus.RESET_FAILED;
