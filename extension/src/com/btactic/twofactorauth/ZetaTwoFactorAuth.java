@@ -19,6 +19,7 @@
  */
 package com.btactic.twofactorauth;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -373,6 +374,27 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
     @Override
     public void enableTwoFactorAuth() throws ServiceException {
         account.setTwoFactorAuthEnabled(true);
+    }
+
+    // What 2FA method is enabled by user: app and/or email
+    public void addEnabledMethod(String twoFactorAuthMethodEnabled) throws ServiceException {
+        account.addTwoFactorAuthMethodEnabled(twoFactorAuthMethodEnabled);
+    }
+
+    // Is either 2FA method (app and/or email) allowed to an user to use?
+    public boolean isAllowedMethod(String twoFactorAuthMethodAllowed) throws ServiceException {
+        String[] allowedMethods = account.getTwoFactorAuthMethodAllowed();
+        if(Arrays.asList(allowedMethods).contains(twoFactorAuthMethodAllowed)){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // Count 2FA (app and/or email) enabled methods.
+    private int enabledTwoFactorAuthMethodsCount() throws ServiceException {
+        String[] enabledMethods = account.getTwoFactorAuthMethodEnabled();
+        return (enabledMethods.length);
     }
 
     private void delete2FACredentials() throws ServiceException {
