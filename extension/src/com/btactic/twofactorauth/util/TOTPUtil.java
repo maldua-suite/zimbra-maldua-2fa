@@ -36,6 +36,8 @@ import com.zimbra.common.util.CliUtil;
 import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.Provisioning;
 
+import com.btactic.twofactorauth.ZetaTwoFactorAuth;
+
 public class TOTPUtil {
 
     private static Options OPTIONS = new Options();
@@ -58,7 +60,7 @@ public class TOTPUtil {
         String acctName = cl.getOptionValue("a");
         String secret = cl.getOptionValue("s");;
         Account acct = prov.getAccountByName(acctName);
-        TwoFactorManager manager = new TwoFactorManager(acct);
+        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(acct);
         AuthenticatorConfig config = manager.getAuthenticatorConfig();
         TOTPAuthenticator authenticator = new TOTPAuthenticator(config);
         Encoding encoding = manager.getCredentialConfig().getEncoding();
