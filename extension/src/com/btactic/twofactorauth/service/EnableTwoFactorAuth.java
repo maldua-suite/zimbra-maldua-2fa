@@ -116,6 +116,7 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
           sendCode(email,context);
         } else if (twoFactorCode != null) {
           validateCode(twoFactorCode, context);
+          manager.generateCredentials();
           manager.enableTwoFactorAuth();
           manager.addEnabledMethod(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL);
         } else {
