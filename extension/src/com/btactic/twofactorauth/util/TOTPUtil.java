@@ -29,7 +29,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import com.zimbra.common.auth.twofactor.AuthenticatorConfig;
-import com.zimbra.common.auth.twofactor.CredentialConfig.Encoding;
+import com.zimbra.common.auth.twofactor.TwoFactorOptions.Encoding;
 import com.zimbra.common.auth.twofactor.TOTPAuthenticator;
 import com.zimbra.common.service.ServiceException;
 import com.zimbra.common.util.CliUtil;
