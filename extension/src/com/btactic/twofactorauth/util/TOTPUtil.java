@@ -70,7 +70,7 @@ public class TOTPUtil {
     private static void usage() {
         HelpFormatter format = new HelpFormatter();
         format.printHelp(new PrintWriter(System.err, true), 80,
-            "zmtotp [account] [secret]", null, OPTIONS, 2, 2, null);
+            "zetatotp [account] [secret]", null, OPTIONS, 2, 2, null);
             System.exit(0);
     }
 }
