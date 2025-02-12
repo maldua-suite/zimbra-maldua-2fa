@@ -100,6 +100,22 @@ When disabling 2FA for an user you need to make sure to:
 
 Otherwise the user will be asked for the 2FA code when loging in if he has ever setup 2FA in the past.
 
+## CLI commands
+
+### zetatotp
+
+Given an account and its secret you can generate its TOTP code without the need of a Google Authenticator app.
+This is useful is, as an admin, you don't want to install a Google Authenticator app yourself but you want to try how the feature works.
+
+```
+Usage:
+zetatotp --account ACCOUNT --secret SECRET
+
+Example:
+zetatotp --account name@example.net --secret ASE34553
+Current TOTP code is: 436244
+```
+
 ### Extra documentation
 
 In addition to the documentation you can find in this README you should be also checking:
