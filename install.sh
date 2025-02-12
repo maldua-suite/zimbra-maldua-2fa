@@ -88,6 +88,10 @@ chown zimbra:zimbra com_btactic_twofactorauth_admin.zip
 
 cp zetatwofactorauth.jar /opt/zimbra/lib/ext/twofactorauth/zetatwofactorauth.jar
 chmod 444 /opt/zimbra/lib/ext/twofactorauth/zetatwofactorauth.jar
+
+cp zetatotp /opt/zimbra/bin/zetatotp
+chmod 755 /opt/zimbra/bin/zetatotp
+
 su - zimbra -c 'zmzimletctl -l deploy '"$(pwd)"'/com_btactic_twofactorauth_admin.zip'
 deploy_qr_addon
 
