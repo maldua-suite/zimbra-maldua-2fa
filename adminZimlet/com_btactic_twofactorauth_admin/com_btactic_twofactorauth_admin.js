@@ -308,7 +308,12 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
             var twofactorauthStep={type:_CASE_, numCols:1, caseKey:ZaNewDomainXWizard.POSIX_2FA_STEP, tabGroupKey:ZaNewDomainXWizard.POSIX_2FA_STEP,
                 items: [com_btactic_twofactorauth_ext.DOMAIN_WIZ_GROUP]
             };
+
+            var switchListEnd = xFormObject.items[i].items.pop();
+            switchListEnd.caseKey = switchListEnd.caseKey + 1 // Move the switchListEnd downwards
+
             xFormObject.items[i].items.push(twofactorauthStep);
+            xFormObject.items[i].items.push(switchListEnd);
 
             console.log("DEBUG1 - xFormObject - BEGIN");
             console.log(xFormObject);
