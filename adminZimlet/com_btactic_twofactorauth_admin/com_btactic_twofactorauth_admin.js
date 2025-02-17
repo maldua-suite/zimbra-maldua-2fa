@@ -305,7 +305,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
             var j = 0;
             var gotAdvanced = false;
             var gotFeatures = false;
-            var twofactorauthStep={type:_CASE_, numCols:1, caseKey:ZaNewDomainXWizard.POSIX_2FA_STEP, tabGroupKey:ZaNewDomainXWizard.POSIX_2FA_STEP,
+            var twofactorauthStep={type:_CASE_, numCols:1, caseKey:ZaNewDomainXWizard.POSIX_2FA_STEP,
                 items: [com_btactic_twofactorauth_ext.DOMAIN_WIZ_GROUP]
             };
 
