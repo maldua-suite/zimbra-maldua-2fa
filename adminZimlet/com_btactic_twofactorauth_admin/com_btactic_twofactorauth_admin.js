@@ -286,6 +286,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
             ZaNewDomainXWizard.POSIX_2FA_STEP = this.TAB_INDEX; // We do not want latest position (++this.TAB_INDEX) but almost latest position
 
             var endStep = this.stepChoices.pop();
+            endStep.value = endStep.value + 1 // Move the endStep downwards
 
             console.log("DEBUG1 - this.stepChoices - BEGIN");
             console.log(this.stepChoices);
