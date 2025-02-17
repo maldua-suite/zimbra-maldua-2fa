@@ -46,7 +46,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
 
     ZaModel.ZETA_TWOFACTORAUTH_METHOD_CHOICES= ZaModel.getZetaTwoFactorAuthMethodChoices ;
 
-    // Show additional 2FA attributes for Accounts
+    // Additional 2FA attributes - Accounts (Definition)
     if (window.ZaAccount && ZaAccount.myXModel && ZaAccount.myXModel.items) {
         ZaAccount.myXModel.items.push({id: "zimbraFeatureTwoFactorAuthAvailable", type: _COS_ENUM_, ref: "attrs/" + "zimbraFeatureTwoFactorAuthAvailable", choices: ZaModel.BOOLEAN_CHOICES});
         ZaAccount.myXModel.items.push({id: "zimbraTwoFactorAuthEnabled", type: _COS_ENUM_, ref: "attrs/" + "zimbraTwoFactorAuthEnabled", choices: ZaModel.BOOLEAN_CHOICES});
@@ -59,6 +59,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         ZaAccount.myXModel.items.push({id: "zimbraTwoFactorCodeLifetimeForEmail", type: _COS_MLIFETIME_, ref: "attrs/" + "zimbraTwoFactorCodeLifetimeForEmail"});
     }
 
+    // Additional 2FA attributes - Accounts (Edit)
     if(ZaTabView.XFormModifiers["ZaAccountXFormView"]) {
         com_btactic_twofactorauth_ext.AccountXFormModifier= function (xFormObject,entry) {
             var cnt = xFormObject.items.length;
@@ -101,7 +102,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         ZaTabView.XFormModifiers["ZaAccountXFormView"].push(com_btactic_twofactorauth_ext.AccountXFormModifier);
     }
 
-    // Show additional 2FA attributes for Class of Service (CoS)
+    // Additional 2FA attributes - ClassOfService (Definition)
     if (window.ZaCos && ZaCos.myXModel && ZaCos.myXModel.items) {
         ZaCos.myXModel.items.push({id: "zimbraFeatureTwoFactorAuthAvailable", type: _COS_ENUM_, ref: "attrs/" + "zimbraFeatureTwoFactorAuthAvailable", choices: ZaModel.BOOLEAN_CHOICES});
         ZaCos.myXModel.items.push({id: "zimbraFeatureTwoFactorAuthRequired", type: _COS_ENUM_, ref: "attrs/" + "zimbraFeatureTwoFactorAuthRequired", choices: ZaModel.BOOLEAN_CHOICES});
@@ -111,6 +112,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         ZaCos.myXModel.items.push({id: "zimbraTwoFactorCodeLifetimeForEmail", type: _COS_MLIFETIME_, ref: "attrs/" + "zimbraTwoFactorCodeLifetimeForEmail"});
     }
 
+    // Additional 2FA attributes - ClassOfService (Edit)
     if(ZaTabView.XFormModifiers["ZaCosXFormView"]) {
         com_btactic_twofactorauth_ext.myCosXFormModifier= function (xFormObject,entry) {
             var cnt = xFormObject.items.length;
@@ -148,7 +150,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         ZaTabView.XFormModifiers["ZaCosXFormView"].push(com_btactic_twofactorauth_ext.myCosXFormModifier);
     }
 
-    // Show additional 2FA attributes for Accounts Wizard
+    // Additional 2FA attributes - Accounts (New)
     com_btactic_twofactorauth_ext.ACC_WIZ_GROUP = {
         type:_ZAWIZGROUP_,
         items:[
@@ -188,7 +190,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         ZaXDialog.XFormModifiers["ZaNewAccountXWizard"].push(com_btactic_twofactorauth_ext.AccountXWizModifier);
     }
 
-    // Show additional 2FA attributes for CoS Wizard
+    // Additional 2FA attributes - ClassOfService (New)
     com_btactic_twofactorauth_ext.COS_WIZ_GROUP = {
         type:_ZAWIZGROUP_,
         items:[
