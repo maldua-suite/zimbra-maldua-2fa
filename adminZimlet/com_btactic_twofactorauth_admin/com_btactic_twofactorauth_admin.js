@@ -268,4 +268,43 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         ZaXDialog.XFormModifiers["ZaNewCosXWizard"].push(com_btactic_twofactorauth_ext.CosXWizModifier);
     }
 
+    // Additional 2FA attributes - Domain (New)
+    com_btactic_twofactorauth_ext.DOMAIN_WIZ_GROUP = {
+        type:_ZAWIZGROUP_,
+        items:[
+            {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromo, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
+            {type:_SPACER_, colSpan:"*"},
+            {ref: "zimbraTwoFactorCodeLifetimeForEmail", type: _LIFETIME_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail}
+        ]
+    };
+
+    if(ZaXDialog.XFormModifiers["ZaNewDomainXWizard"]) {
+        com_btactic_twofactorauth_ext.DomainXWizModifier= function (xFormObject, entry) {
+            ZaNewDomainXWizard.POSIX_2FA_STEP = ++this.TAB_INDEX;
+
+            var endStep = this.stepChoices.pop();
+            this.stepChoices.push({value:ZaNewDomainXWizard.POSIX_2FA_STEP, label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab});
+            this.stepChoices.push(endStep);
+
+            this._lastStep = this.stepChoices.length;
+
+            var cnt = xFormObject.items.length;
+            var i = 0;
+            for(i = 0; i <cnt; i++) {
+                if(xFormObject.items[i].type=="switch")
+                    break;
+            }
+            cnt = xFormObject.items[i].items.length;
+            var j = 0;
+            var gotAdvanced = false;
+            var gotFeatures = false;
+            var twofactorauthStep={type:_CASE_, numCols:1, caseKey:ZaNewDomainXWizard.POSIX_2FA_STEP, tabGroupKey:ZaNewDomainXWizard.POSIX_2FA_STEP,
+                items: [com_btactic_twofactorauth_ext.DOMAIN_WIZ_GROUP]
+            };
+            xFormObject.items[i].items.push(twofactorauthStep);
+
+        }
+        ZaXDialog.XFormModifiers["ZaNewDomainXWizard"].push(com_btactic_twofactorauth_ext.DomainXWizModifier);
+    }
+
 }
