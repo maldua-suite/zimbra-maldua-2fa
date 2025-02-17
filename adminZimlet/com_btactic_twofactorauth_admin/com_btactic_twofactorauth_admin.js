@@ -280,9 +280,17 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
 
     if(ZaXDialog.XFormModifiers["ZaNewDomainXWizard"]) {
         com_btactic_twofactorauth_ext.DomainXWizModifier= function (xFormObject, entry) {
+            console.log("DEBUG1 - xFormObject - BEGIN");
+            console.log(xFormObject);
+            console.log("DEBUG1 - xFormObject - END");
             ZaNewDomainXWizard.POSIX_2FA_STEP = this.TAB_INDEX; // We do not want latest position (++this.TAB_INDEX) but almost latest position
 
             var endStep = this.stepChoices.pop();
+
+            console.log("DEBUG1 - this.stepChoices - BEGIN");
+            console.log(this.stepChoices);
+            console.log("DEBUG1 - this.stepChoices - END");
+
             this.stepChoices.push({value:ZaNewDomainXWizard.POSIX_2FA_STEP, label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab});
             this.stepChoices.push(endStep);
 
