@@ -282,6 +282,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         com_btactic_twofactorauth_ext.DomainXWizModifier= function (xFormObject, entry) {
 
             ZaNewDomainXWizard.POSIX_2FA_STEP = this.TAB_INDEX; // We do not want latest position (++this.TAB_INDEX) but almost latest position
+            ZaNewDomainXWizard.CONFIG_COMPLETE_STEP = ZaNewDomainXWizard.POSIX_2FA_STEP + 1 ; // Ensure that Complete step is the last one.
 
             var endStep = this.stepChoices.pop();
             endStep.value = endStep.value + 1 // Move the endStep downwards
