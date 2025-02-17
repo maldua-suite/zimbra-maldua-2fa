@@ -319,6 +319,10 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
             console.log(xFormObject);
             console.log("DEBUG1 - xFormObject - END");
 
+            console.log("DEBUG1 - entry - BEGIN");
+            console.log(entry);
+            console.log("DEBUG1 - entry - END");
+
         }
         ZaXDialog.XFormModifiers["ZaNewDomainXWizard"].push(com_btactic_twofactorauth_ext.DomainXWizModifier);
     }
