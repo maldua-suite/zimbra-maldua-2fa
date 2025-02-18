@@ -188,6 +188,44 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         ZaTabView.XFormModifiers["ZaDomainXFormView"].push(com_btactic_twofactorauth_ext.myDomainXFormModifier);
     }
 
+    // Additional 2FA attributes - GlobalConfig (Definition)
+    if (window.GlobalConfig && GlobalConfig.myXModel && GlobalConfig.myXModel.items) {
+        GlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeLifetimeForEmail", type: _COS_MLIFETIME_, ref: "attrs/" + "zimbraTwoFactorCodeLifetimeForEmail"});
+    }
+
+    // Additional 2FA attributes - GlobalConfig (Edit)
+    if(ZaTabView.XFormModifiers["GlobalConfigXFormView"]) {
+        com_btactic_twofactorauth_ext.myGlobalConfigXFormModifier= function (xFormObject,entry) {
+            var cnt = xFormObject.items.length;
+            var i = 0;
+            for(i = 0; i <cnt; i++) {
+                if(xFormObject.items[i].type=="switch")
+                    break;
+            }
+            var tabBar = xFormObject.items[1] ;
+            var twofactorauthTabIx = ++this.TAB_INDEX;
+            tabBar.choices.push({value:twofactorauthTabIx, label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab});
+
+            var twofactorauthAccountTab={
+                type:_ZATABCASE_,
+                numCols:1,
+                caseKey:twofactorauthTabIx,
+                items: [
+                    {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromo, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
+                    {type:_SPACER_, colSpan:"*"},
+                    {type:_ZAGROUP_,
+                        items:[
+                            {ref: "zimbraTwoFactorCodeLifetimeForEmail", type: _LIFETIME_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, labelLocation: _LEFT_}
+                        ]
+                    }
+                ]
+            };
+
+            xFormObject.items[i].items.push(twofactorauthAccountTab);
+        }
+        ZaTabView.XFormModifiers["GlobalConfigXFormView"].push(com_btactic_twofactorauth_ext.myGlobalConfigXFormModifier);
+    }
+
     // Additional 2FA attributes - Accounts (New)
     com_btactic_twofactorauth_ext.ACC_WIZ_GROUP = {
         type:_ZAWIZGROUP_,
