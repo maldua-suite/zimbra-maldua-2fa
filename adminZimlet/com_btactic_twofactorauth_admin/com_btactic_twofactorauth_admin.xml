@@ -20,5 +20,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
 <zimlet name="com_btactic_twofactorauth_admin" version="9.99.999" label="${msg.label}" description="${msg.description}" extension="true">
     <include>com_btactic_twofactorauth_admin.js</include>
+    <resource>images/btactic_logo.png</resource>
     <disableUIUndeploy>FALSE</disableUIUndeploy>
 </zimlet>

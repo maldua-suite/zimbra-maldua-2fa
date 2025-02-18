@@ -57,6 +57,13 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         return i;
     }
 
+    com_btactic_twofactorauth_admin.zetaPromoWithImage =
+      '<img src="' +
+      "/service/zimlet/com_btactic_twofactorauth_admin/images/btactic_logo.png" + // Using getResource from a ZmZimletBase object does not seem to work in admin
+      '">' +
+      " " +
+      com_btactic_twofactorauth_admin.zetaPromo;
+
     // Additional 2FA attributes - Accounts (Definition)
     if (window.ZaAccount && ZaAccount.myXModel && ZaAccount.myXModel.items) {
         ZaAccount.myXModel.items.push({id: "zimbraFeatureTwoFactorAuthAvailable", type: _COS_ENUM_, ref: "attrs/" + "zimbraFeatureTwoFactorAuthAvailable", choices: ZaModel.BOOLEAN_CHOICES});
@@ -85,7 +92,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                 numCols:1,
                 caseKey:twofactorauthTabIx,
                 items: [
-                    {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromo, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
+                    {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromoWithImage, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
                     {type:_SPACER_, colSpan:"*"},
                     {type: _DWT_ALERT_, containerCssStyle: "padding-bottom:0px", style: DwtAlert.INFO, iconVisible: true, content : com_btactic_twofactorauth_admin.zimbraTwoFactorAuthDisableWarning, colSpan : "*"},
                     {type:_SPACER_, colSpan:"*"},
@@ -136,7 +143,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                 numCols:1,
                 caseKey:twofactorauthTabIx,
                 items: [
-                    {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromo, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
+                    {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromoWithImage, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
                     {type:_SPACER_, colSpan:"*"},
                     {type:_ZA_TOP_GROUPER_,
                         label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab,
@@ -177,7 +184,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                 numCols:1,
                 caseKey:twofactorauthTabIx,
                 items: [
-                    {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromo, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
+                    {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromoWithImage, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
                     {type:_SPACER_, colSpan:"*"},
                     {type:_ZA_TOP_GROUPER_,
                         label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab,
@@ -213,7 +220,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                 numCols:1,
                 caseKey:twofactorauthTabIx,
                 items: [
-                    {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromo, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
+                    {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromoWithImage, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
                     {type:_SPACER_, colSpan:"*"},
                     {type:_ZA_TOP_GROUPER_,
                         label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab,
@@ -233,7 +240,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
     com_btactic_twofactorauth_ext.ACC_WIZ_GROUP = {
         type:_ZAWIZGROUP_,
         items:[
-            {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromo, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
+            {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromoWithImage, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
             {type:_SPACER_, colSpan:"*"},
             {
               type: _ZAWIZ_TOP_GROUPER_,
@@ -275,7 +282,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
     com_btactic_twofactorauth_ext.COS_WIZ_GROUP = {
         type:_ZAWIZGROUP_,
         items:[
-            {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromo, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
+            {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromoWithImage, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
             {type:_SPACER_, colSpan:"*"},
             {
               type: _ZAWIZ_TOP_GROUPER_,
@@ -317,7 +324,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
     com_btactic_twofactorauth_ext.DOMAIN_WIZ_GROUP = {
         type:_ZAWIZGROUP_,
         items:[
-            {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromo, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
+            {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromoWithImage, colSpan:"*", cssStyle:"font-size:20pt; font-weight: bold;"},
             {type:_SPACER_, colSpan:"*"},
             {
               type: _ZAWIZ_TOP_GROUPER_,
