@@ -46,6 +46,17 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
 
     ZaModel.ZETA_TWOFACTORAUTH_METHOD_CHOICES= ZaModel.getZetaTwoFactorAuthMethodChoices ;
 
+    com_btactic_twofactorauth_ext.getFirstSwitchPosition = function (xFormObject) {
+        var cnt = xFormObject.items.length;
+        var i = 0;
+        for(i = 0; i <cnt; i++) {
+            if(xFormObject.items[i].type=="switch")
+                break;
+        }
+
+        return i;
+    }
+
     // Additional 2FA attributes - Accounts (Definition)
     if (window.ZaAccount && ZaAccount.myXModel && ZaAccount.myXModel.items) {
         ZaAccount.myXModel.items.push({id: "zimbraFeatureTwoFactorAuthAvailable", type: _COS_ENUM_, ref: "attrs/" + "zimbraFeatureTwoFactorAuthAvailable", choices: ZaModel.BOOLEAN_CHOICES});
@@ -62,14 +73,11 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
     // Additional 2FA attributes - Accounts (Edit)
     if(ZaTabView.XFormModifiers["ZaAccountXFormView"]) {
         com_btactic_twofactorauth_ext.AccountXFormModifier= function (xFormObject,entry) {
-            var cnt = xFormObject.items.length;
-            var i = 0;
-            for(i = 0; i <cnt; i++) {
-                if(xFormObject.items[i].type=="switch")
-                    break;
-            }
-            var tabBar = xFormObject.items[1] ;
+
+            var firstSwitchPosition = com_btactic_twofactorauth_ext.getFirstSwitchPosition(xFormObject);
             var twofactorauthTabIx = ++this.TAB_INDEX;
+
+            var tabBar = xFormObject.items[1];
             tabBar.choices.push({value:twofactorauthTabIx, label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab});
 
             var twofactorauthAccountTab={
@@ -97,7 +105,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                 ]
             };
 
-            xFormObject.items[i].items.push(twofactorauthAccountTab);
+            xFormObject.items[firstSwitchPosition].items.push(twofactorauthAccountTab);
         }
         ZaTabView.XFormModifiers["ZaAccountXFormView"].push(com_btactic_twofactorauth_ext.AccountXFormModifier);
     }
@@ -115,14 +123,11 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
     // Additional 2FA attributes - ClassOfService (Edit)
     if(ZaTabView.XFormModifiers["ZaCosXFormView"]) {
         com_btactic_twofactorauth_ext.myCosXFormModifier= function (xFormObject,entry) {
-            var cnt = xFormObject.items.length;
-            var i = 0;
-            for(i = 0; i <cnt; i++) {
-                if(xFormObject.items[i].type=="switch")
-                    break;
-            }
-            var tabBar = xFormObject.items[1] ;
+
+            var firstSwitchPosition = com_btactic_twofactorauth_ext.getFirstSwitchPosition(xFormObject);
             var twofactorauthTabIx = ++this.TAB_INDEX;
+
+            var tabBar = xFormObject.items[1];
             tabBar.choices.push({value:twofactorauthTabIx, label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab});
 
             var twofactorauthAccountTab={
@@ -145,7 +150,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                 ]
             };
 
-            xFormObject.items[i].items.push(twofactorauthAccountTab);
+            xFormObject.items[firstSwitchPosition].items.push(twofactorauthAccountTab);
         }
         ZaTabView.XFormModifiers["ZaCosXFormView"].push(com_btactic_twofactorauth_ext.myCosXFormModifier);
     }
@@ -158,14 +163,11 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
     // Additional 2FA attributes - Domain (Edit)
     if(ZaTabView.XFormModifiers["ZaDomainXFormView"]) {
         com_btactic_twofactorauth_ext.myDomainXFormModifier= function (xFormObject,entry) {
-            var cnt = xFormObject.items.length;
-            var i = 0;
-            for(i = 0; i <cnt; i++) {
-                if(xFormObject.items[i].type=="switch")
-                    break;
-            }
-            var tabBar = xFormObject.items[1] ;
+
+            var firstSwitchPosition = com_btactic_twofactorauth_ext.getFirstSwitchPosition(xFormObject);
             var twofactorauthTabIx = ++this.TAB_INDEX;
+
+            var tabBar = xFormObject.items[1];
             tabBar.choices.push({value:twofactorauthTabIx, label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab});
 
             var twofactorauthAccountTab={
@@ -183,7 +185,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                 ]
             };
 
-            xFormObject.items[i].items.push(twofactorauthAccountTab);
+            xFormObject.items[firstSwitchPosition].items.push(twofactorauthAccountTab);
         }
         ZaTabView.XFormModifiers["ZaDomainXFormView"].push(com_btactic_twofactorauth_ext.myDomainXFormModifier);
     }
@@ -196,14 +198,11 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
     // Additional 2FA attributes - GlobalConfig (Edit)
     if(ZaTabView.XFormModifiers["GlobalConfigXFormView"]) {
         com_btactic_twofactorauth_ext.myGlobalConfigXFormModifier= function (xFormObject,entry) {
-            var cnt = xFormObject.items.length;
-            var i = 0;
-            for(i = 0; i <cnt; i++) {
-                if(xFormObject.items[i].type=="switch")
-                    break;
-            }
-            var tabBar = xFormObject.items[1] ;
+
+            var firstSwitchPosition = com_btactic_twofactorauth_ext.getFirstSwitchPosition(xFormObject);
             var twofactorauthTabIx = ++this.TAB_INDEX;
+
+            var tabBar = xFormObject.items[1];
             tabBar.choices.push({value:twofactorauthTabIx, label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab});
 
             var twofactorauthAccountTab={
@@ -221,7 +220,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                 ]
             };
 
-            xFormObject.items[i].items.push(twofactorauthAccountTab);
+            xFormObject.items[firstSwitchPosition].items.push(twofactorauthAccountTab);
         }
         ZaTabView.XFormModifiers["GlobalConfigXFormView"].push(com_btactic_twofactorauth_ext.myGlobalConfigXFormModifier);
     }
@@ -243,24 +242,18 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
 
     if(ZaXDialog.XFormModifiers["ZaNewAccountXWizard"]) {
         com_btactic_twofactorauth_ext.AccountXWizModifier= function (xFormObject, entry) {
-            ZaNewAccountXWizard.POSIX_2FA_STEP = ++this.TAB_INDEX;
-            this.stepChoices.push({value:ZaNewAccountXWizard.POSIX_2FA_STEP, label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab});
+
+            var firstSwitchPosition = com_btactic_twofactorauth_ext.getFirstSwitchPosition(xFormObject);
+            var twofactorauthTabIx = ++this.TAB_INDEX;
+
+            this.stepChoices.push({value:twofactorauthTabIx, label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab});
             this._lastStep = this.stepChoices.length;
 
-            var cnt = xFormObject.items.length;
-            var i = 0;
-            for(i = 0; i <cnt; i++) {
-                if(xFormObject.items[i].type=="switch")
-                    break;
-            }
-            cnt = xFormObject.items[i].items.length;
-            var j = 0;
-            var gotAdvanced = false;
-            var gotFeatures = false;
-            var twofactorauthStep={type:_CASE_, numCols:1, caseKey:ZaNewAccountXWizard.POSIX_2FA_STEP, tabGroupKey:ZaNewAccountXWizard.POSIX_2FA_STEP,
+            var twofactorauthStep={type:_CASE_, numCols:1, caseKey:twofactorauthTabIx, tabGroupKey:twofactorauthTabIx,
                 items: [com_btactic_twofactorauth_ext.ACC_WIZ_GROUP]
             };
-            xFormObject.items[i].items.push(twofactorauthStep);
+
+            xFormObject.items[firstSwitchPosition].items.push(twofactorauthStep);
 
         }
         ZaXDialog.XFormModifiers["ZaNewAccountXWizard"].push(com_btactic_twofactorauth_ext.AccountXWizModifier);
@@ -283,24 +276,18 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
 
     if(ZaXDialog.XFormModifiers["ZaNewCosXWizard"]) {
         com_btactic_twofactorauth_ext.CosXWizModifier= function (xFormObject, entry) {
-            ZaNewCosXWizard.POSIX_2FA_STEP = ++this.TAB_INDEX;
-            this.stepChoices.push({value:ZaNewCosXWizard.POSIX_2FA_STEP, label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab});
+
+            var firstSwitchPosition = com_btactic_twofactorauth_ext.getFirstSwitchPosition(xFormObject);
+            var twofactorauthTabIx = ++this.TAB_INDEX;
+
+            this.stepChoices.push({value:twofactorauthTabIx, label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab});
             this._lastStep = this.stepChoices.length;
 
-            var cnt = xFormObject.items.length;
-            var i = 0;
-            for(i = 0; i <cnt; i++) {
-                if(xFormObject.items[i].type=="switch")
-                    break;
-            }
-            cnt = xFormObject.items[i].items.length;
-            var j = 0;
-            var gotAdvanced = false;
-            var gotFeatures = false;
-            var twofactorauthStep={type:_CASE_, numCols:1, caseKey:ZaNewCosXWizard.POSIX_2FA_STEP, tabGroupKey:ZaNewCosXWizard.POSIX_2FA_STEP,
+            var twofactorauthStep={type:_CASE_, numCols:1, caseKey:twofactorauthTabIx, tabGroupKey:twofactorauthTabIx,
                 items: [com_btactic_twofactorauth_ext.COS_WIZ_GROUP]
             };
-            xFormObject.items[i].items.push(twofactorauthStep);
+
+            xFormObject.items[firstSwitchPosition].items.push(twofactorauthStep);
 
         }
         ZaXDialog.XFormModifiers["ZaNewCosXWizard"].push(com_btactic_twofactorauth_ext.CosXWizModifier);
@@ -319,36 +306,26 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
     if(ZaXDialog.XFormModifiers["ZaNewDomainXWizard"]) {
         com_btactic_twofactorauth_ext.DomainXWizModifier= function (xFormObject, entry) {
 
-            ZaNewDomainXWizard.POSIX_2FA_STEP = this.TAB_INDEX; // We do not want latest position (++this.TAB_INDEX) but almost latest position
-            ZaNewDomainXWizard.CONFIG_COMPLETE_STEP = ZaNewDomainXWizard.POSIX_2FA_STEP + 1 ; // Ensure that Complete step is the last one.
+            var firstSwitchPosition = com_btactic_twofactorauth_ext.getFirstSwitchPosition(xFormObject);
+            var twofactorauthTabIx = this.TAB_INDEX; // We do not want latest position (++this.TAB_INDEX) but almost latest position
+            ZaNewDomainXWizard.CONFIG_COMPLETE_STEP = twofactorauthTabIx + 1 ; // Ensure that Complete step is the last one.
 
             var endStep = this.stepChoices.pop();
             endStep.value = endStep.value + 1 // Move the endStep downwards
 
-            this.stepChoices.push({value:ZaNewDomainXWizard.POSIX_2FA_STEP, label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab});
+            this.stepChoices.push({value:twofactorauthTabIx, label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab});
             this.stepChoices.push(endStep);
-
             this._lastStep = this.stepChoices.length;
 
-            var cnt = xFormObject.items.length;
-            var i = 0;
-            for(i = 0; i <cnt; i++) {
-                if(xFormObject.items[i].type=="switch")
-                    break;
-            }
-            cnt = xFormObject.items[i].items.length;
-            var j = 0;
-            var gotAdvanced = false;
-            var gotFeatures = false;
-            var twofactorauthStep={type:_CASE_, numCols:1, caseKey:ZaNewDomainXWizard.POSIX_2FA_STEP,
+            var twofactorauthStep={type:_CASE_, numCols:1, caseKey:twofactorauthTabIx,
                 items: [com_btactic_twofactorauth_ext.DOMAIN_WIZ_GROUP]
             };
 
-            var switchListEnd = xFormObject.items[i].items.pop();
+            var switchListEnd = xFormObject.items[firstSwitchPosition].items.pop();
             switchListEnd.caseKey = switchListEnd.caseKey + 1 // Move the switchListEnd downwards
 
-            xFormObject.items[i].items.push(twofactorauthStep);
-            xFormObject.items[i].items.push(switchListEnd);
+            xFormObject.items[firstSwitchPosition].items.push(twofactorauthStep);
+            xFormObject.items[firstSwitchPosition].items.push(switchListEnd);
 
         }
         ZaXDialog.XFormModifiers["ZaNewDomainXWizard"].push(com_btactic_twofactorauth_ext.DomainXWizModifier);
