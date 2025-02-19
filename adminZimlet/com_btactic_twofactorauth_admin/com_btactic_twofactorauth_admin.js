@@ -57,12 +57,24 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         return i;
     }
 
+    // Using getResource from a ZmZimletBase object does not seem to work in admin
+    com_btactic_twofactorauth_admin.zimletImagesPath = "/service/zimlet/com_btactic_twofactorauth_admin/images"
+
+
+    com_btactic_twofactorauth_admin.malduaHeader =
+      '<a target="_blank" href="https://github.com/maldua-suite/maldua-suite">' +
+      '<img align="right" alt="Maldua Suite for Zimbra Collaboration Server" src="' +
+      com_btactic_twofactorauth_admin.zimletImagesPath + "/" + "maldua_logo.png" +
+      '">' +
+      '</a>'
+
     com_btactic_twofactorauth_admin.zetaPromoWithImage =
       '<img src="' +
-      "/service/zimlet/com_btactic_twofactorauth_admin/images/btactic_logo.png" + // Using getResource from a ZmZimletBase object does not seem to work in admin
+      com_btactic_twofactorauth_admin.zimletImagesPath + "/" + "btactic_logo.png" +
       '">' +
       " " +
-      com_btactic_twofactorauth_admin.zetaPromo;
+      com_btactic_twofactorauth_admin.zetaPromo +
+      com_btactic_twofactorauth_admin.malduaHeader;
 
     // Additional 2FA attributes - Accounts (Definition)
     if (window.ZaAccount && ZaAccount.myXModel && ZaAccount.myXModel.items) {
