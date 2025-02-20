@@ -182,6 +182,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
     if (window.ZaDomain && ZaDomain.myXModel && ZaDomain.myXModel.items) {
         ZaDomain.myXModel.items.push({id: "zimbraTwoFactorCodeLifetimeForEmail", type: _LIFETIME_, ref: "attrs/" + "zimbraTwoFactorCodeLifetimeForEmail"});
         ZaDomain.myXModel.items.push({id: "zimbraTwoFactorCodeEmailFrom", type: _EMAIL_ADDRESS_, ref: "attrs/" + "zimbraTwoFactorCodeEmailFrom"});
+        ZaDomain.myXModel.items.push({id: "zimbraTwoFactorCodeEmailSubject", type: _STRING_, ref: "attrs/" + "zimbraTwoFactorCodeEmailSubject"});
     }
 
     // Additional 2FA attributes - Domain (Edit)
@@ -205,7 +206,8 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                         label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab,
                         items:[
                             {ref: "zimbraTwoFactorCodeLifetimeForEmail", type: _LIFETIME_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, labelLocation: _LEFT_},
-                            {ref: "zimbraTwoFactorCodeEmailFrom", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, labelLocation: _LEFT_}
+                            {ref: "zimbraTwoFactorCodeEmailFrom", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, labelLocation: _LEFT_},
+                            {ref: "zimbraTwoFactorCodeEmailSubject", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailSubject, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailSubject, labelLocation: _LEFT_}
                         ]
                     }
                 ]
@@ -220,6 +222,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
     if (window.GlobalConfig && GlobalConfig.myXModel && GlobalConfig.myXModel.items) {
         GlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeLifetimeForEmail", type: _COS_MLIFETIME_, ref: "attrs/" + "zimbraTwoFactorCodeLifetimeForEmail"});
         GlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeEmailFrom", type: _EMAIL_ADDRESS_, ref: "attrs/" + "zimbraTwoFactorCodeEmailFrom"});
+        GlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeEmailSubject", type: _STRING_, ref: "attrs/" + "zimbraTwoFactorCodeEmailSubject"});
     }
 
     // Additional 2FA attributes - GlobalConfig (Edit)
@@ -243,7 +246,8 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                         label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab,
                         items:[
                             {ref: "zimbraTwoFactorCodeLifetimeForEmail", type: _LIFETIME_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, labelLocation: _LEFT_},
-                            {ref: "zimbraTwoFactorCodeEmailFrom", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, labelLocation: _LEFT_}
+                            {ref: "zimbraTwoFactorCodeEmailFrom", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, labelLocation: _LEFT_},
+                            {ref: "zimbraTwoFactorCodeEmailSubject", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailSubject, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailSubject, labelLocation: _LEFT_}
                         ]
                     }
                 ]
@@ -351,7 +355,8 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
               numCols : 2,
               items : [
                 {ref: "zimbraTwoFactorCodeLifetimeForEmail", type: _LIFETIME_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail},
-                {ref: "zimbraTwoFactorCodeEmailFrom", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom}
+                {ref: "zimbraTwoFactorCodeEmailFrom", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom},
+                {ref: "zimbraTwoFactorCodeEmailSubject", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailSubject, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailSubject}
               ]
             }
         ]
