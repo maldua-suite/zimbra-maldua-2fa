@@ -495,17 +495,24 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         }
     }
 
+    private void smartPurgeTwoFactorAuthData() throws ServiceException {
+        if (enabledTwoFactorAuthMethodsCount() == 0) {
+          deleteCredentials();
+          ZetaAppSpecificPasswords appSpecificPasswordsManager = new ZetaAppSpecificPasswords(account);
+          appSpecificPasswordsManager.revokeAll();
+          account.unsetTwoFactorCodeForEmail();
+        }
+    }
+
     public void disableTwoFactorAuthApp(boolean deleteCredentials) throws ServiceException {
         checkDisableTwoFactorAuth();
 
         if (account.isTwoFactorAuthEnabled()) {
             account.removeTwoFactorAuthMethodEnabled(AccountConstants.E_TWO_FACTOR_METHOD_APP);
             smartUnsetZimbraTwoFactorAuthEnabled();
-            if (deleteCredentials) {
-                deleteCredentials();
-            }
-            ZetaAppSpecificPasswords appSpecificPasswordsManager = new ZetaAppSpecificPasswords(account);
-            appSpecificPasswordsManager.revokeAll();
+
+            smartPurgeTwoFactorAuthData();
+
             smartSetPrefPrimaryTwoFactorAuthMethod();
         } else {
             ZimbraLog.account.info("two-factor authentication already disabled");
@@ -520,6 +527,9 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
             smartUnsetZimbraTwoFactorAuthEnabled();
             account.unsetPrefPasswordRecoveryAddress();
             account.unsetPrefPasswordRecoveryAddressStatus();
+
+            smartPurgeTwoFactorAuthData();
+
             smartSetPrefPrimaryTwoFactorAuthMethod();
         } else {
             ZimbraLog.account.info("two-factor authentication already disabled");
