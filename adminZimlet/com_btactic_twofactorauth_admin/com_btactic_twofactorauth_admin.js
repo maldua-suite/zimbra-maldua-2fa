@@ -29,6 +29,35 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         console.log("Start loading com_btactic_twofactorauth_admin.js");
     }
 
+    // Inspired on checkInteropSettings function from ZaItem.js
+    com_btactic_twofactorauth_admin.disableMethod =
+    function (method) {
+
+        var controller =  ZaApp.getInstance().getCurrentController() ;
+        var controllerAccount = controller._currentObject;
+
+        try {
+
+          var soapCmd  = "DisableTwoFactorAuthRequest";
+          var soapDoc = AjxSoapDoc.create(soapCmd, ZaZimbraAdmin.URN, null);
+          var soapMethod  = soapDoc.set("method", method) ;
+          var soapAccount = soapDoc.set("account", controllerAccount.id);
+          var soapByID = soapAccount.setAttribute("by", "id");
+
+          var params = new Object();
+          params.soapDoc = soapDoc;
+          var reqMgrParams = {
+              controller : controller ,
+              busyMsg : "Disabling TwoFactorAuth for " + method + " method."
+          }
+          var resp = ZaRequestMgr.invoke(params, reqMgrParams).Body.DisableTwoFactorAuthResponse;
+
+          // TODO: Disable button
+        } catch (e) {
+            controller._handleException(e)  ;
+        }
+    }
+
     // Inspired from ZaModel.getBooleanChoices
     // TODO: Use translations instead of hardcoded strings
     ZaModel.getZetaTwoFactorAuthMethodChoices = function () {
@@ -120,6 +149,9 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                             {ref: "zimbraTwoFactorAuthNumScratchCodes", type: _SUPER_TEXTFIELD_, txtBoxLabel: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthNumScratchCodes, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthNumScratchCodes, textFieldCssClass: "admin_xform_number_input", resetToSuperLabel: ZaMsg.NAD_ResetToCOS},
                             {ref: "zimbraTwoFactorAuthMethodAllowed", type: _SUPER_MULTIPLE_CHECKBOX_, groupLabel: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodAllowed, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodAllowed, resetToSuperLabel: ZaMsg.NAD_ResetToCOS},
                             {ref: "zimbraTwoFactorAuthMethodEnabled", type: _ZASELECT_MULTIPLE_CHECKBOX_, groupLabel: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodEnabled, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodEnabled},
+                            // Inspired on ZaMsg.Check_Settings button from ZaDomainXFormView.js
+                            {type: _DWT_BUTTON_, label: "Disable App 2FA Method", autoPadding: false, onActivate: "com_btactic_twofactorauth_admin.disableMethod('app')"},
+                            {type: _DWT_BUTTON_, label: "Disable Email 2FA Method", autoPadding: false, onActivate: "com_btactic_twofactorauth_admin.disableMethod('email')"},
                             {ref: "zimbraPrefPrimaryTwoFactorAuthMethod", type: _OSELECT1_, label: com_btactic_twofactorauth_admin.zimbraPrefPrimaryTwoFactorAuthMethod, msgName: com_btactic_twofactorauth_admin.zimbraPrefPrimaryTwoFactorAuthMethod},
                             {ref: "zimbraTwoFactorCodeLifetimeForEmail", type: _SUPER_LIFETIME_, txtBoxLabel: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail}
                         ]
