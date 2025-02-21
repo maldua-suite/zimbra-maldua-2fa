@@ -471,6 +471,20 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         }
     }
 
+    public void smartSetPrefPrimaryTwoFactorAuthMethod() throws ServiceException {
+        // Only to be called from disableTwoFactorAuthApp and disableTwoFactorAuthEmail functions
+        // We assume specific enabled attributes based on methods have been removed previously
+        // Only unset if there are no remaining methods.
+
+        if (enabledTwoFactorAuthMethodsCount() == 0) {
+          account.unsetPrefPrimaryTwoFactorAuthMethod();
+        } else {
+          String[] enabledMethods = account.getTwoFactorAuthMethodEnabled();
+          String firstEnabledMethod = enabledMethods[0];
+          account.setPrefPrimaryTwoFactorAuthMethod(firstEnabledMethod);
+        }
+    }
+
     public void checkDisableTwoFactorAuth() throws ServiceException {
         // Option 1: Two methods enabled: OK
         // Option 2: If only one method enabled then only disable if not required
@@ -492,6 +506,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
             }
             ZetaAppSpecificPasswords appSpecificPasswordsManager = new ZetaAppSpecificPasswords(account);
             appSpecificPasswordsManager.revokeAll();
+            smartSetPrefPrimaryTwoFactorAuthMethod();
         } else {
             ZimbraLog.account.info("two-factor authentication already disabled");
         }
@@ -505,6 +520,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
             smartUnsetZimbraTwoFactorAuthEnabled();
             account.unsetPrefPasswordRecoveryAddress();
             account.unsetPrefPasswordRecoveryAddressStatus();
+            smartSetPrefPrimaryTwoFactorAuthMethod();
         } else {
             ZimbraLog.account.info("two-factor authentication already disabled");
         }
