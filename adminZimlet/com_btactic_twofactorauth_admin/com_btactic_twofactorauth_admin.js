@@ -150,8 +150,8 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                             {ref: "zimbraTwoFactorAuthMethodAllowed", type: _SUPER_MULTIPLE_CHECKBOX_, groupLabel: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodAllowed, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodAllowed, resetToSuperLabel: ZaMsg.NAD_ResetToCOS},
                             {ref: "zimbraTwoFactorAuthMethodEnabled", type: _ZASELECT_MULTIPLE_CHECKBOX_, groupLabel: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodEnabled, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodEnabled},
                             // Inspired on ZaMsg.Check_Settings button from ZaDomainXFormView.js
-                            {type: _DWT_BUTTON_, label: "Disable App 2FA Method", autoPadding: false, onActivate: "com_btactic_twofactorauth_admin.disableMethod('app')"},
-                            {type: _DWT_BUTTON_, label: "Disable Email 2FA Method", autoPadding: false, onActivate: "com_btactic_twofactorauth_admin.disableMethod('email')"},
+                            {type:_SPACER_, colSpan:"1"}, {type: _DWT_BUTTON_, label: "Disable App 2FA Method", autoPadding: false, onActivate: "com_btactic_twofactorauth_admin.disableMethod('app')"},
+                            {type:_SPACER_, colSpan:"1"}, {type: _DWT_BUTTON_, label: "Disable Email 2FA Method", autoPadding: false, onActivate: "com_btactic_twofactorauth_admin.disableMethod('email')"},
                             {ref: "zimbraPrefPrimaryTwoFactorAuthMethod", type: _OSELECT1_, label: com_btactic_twofactorauth_admin.zimbraPrefPrimaryTwoFactorAuthMethod, msgName: com_btactic_twofactorauth_admin.zimbraPrefPrimaryTwoFactorAuthMethod},
                             {ref: "zimbraTwoFactorCodeLifetimeForEmail", type: _SUPER_LIFETIME_, txtBoxLabel: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail}
                         ]
