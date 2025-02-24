@@ -51,6 +51,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
               busyMsg : "Disabling TwoFactorAuth for " + method + " method."
           }
           var resp = ZaRequestMgr.invoke(params, reqMgrParams).Body.DisableTwoFactorAuthResponse;
+          ZaZimbraAdmin.prototype._refreshListener.call(ZaZimbraAdmin.getInstance())
 
           // TODO: Disable button
         } catch (e) {
