@@ -87,19 +87,113 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         return i;
     }
 
-    com_btactic_twofactorauth_ext.disableEnableMethods = function() {
-      // Hardcode number of methods: 2
-      for (var i = 0; i < 2; i++) {
-        var checkbox = this.getElement(this.getId() + "_choiceitem_" + i);
-        if (checkbox) {
-          checkbox.disabled = true;
+    com_btactic_twofactorauth_ext.viewAppButtonThis = '';
+
+    com_btactic_twofactorauth_ext.viewAppButton = function() {
+        // Hardcode number of methods: 2
+        // App button: 0
+        // Email button: 1
+
+        com_btactic_twofactorauth_ext.viewAppButtonThis = this;
+
+        var enableCheckboxId = com_btactic_twofactorauth_ext.enableCheckboxId;
+        var isEnabled = true;
+        if (enableCheckboxId != '') {
+            var app_button_ix = 0;
+            var email_button_ix = 1;
+            for (var i = 0; i < 2; i++) {
+                var checkbox = document.getElementById(enableCheckboxId + "_choiceitem_" + i);
+                if (checkbox) {
+
+                  checkbox.disabled = true;
+                  if ( i == app_button_ix ) {
+                      if (!(checkbox.checked)) {
+                          isEnabled = false;
+                      }
+                  }
+                }
+            }
         }
-      }
+        return (isEnabled);
+    }
+
+    com_btactic_twofactorauth_ext.viewEmailButtonThis = '';
+
+    com_btactic_twofactorauth_ext.viewEmailButton = function() {
+        // Hardcode number of methods: 2
+        // App button: 0
+        // Email button: 1
+
+        com_btactic_twofactorauth_ext.viewEmailButtonThis = this;
+
+        var enableCheckboxId = com_btactic_twofactorauth_ext.enableCheckboxId;
+        var isEnabled = true;
+        if (enableCheckboxId != '') {
+            var app_button_ix = 0;
+            var email_button_ix = 1;
+            for (var i = 0; i < 2; i++) {
+                var checkbox = document.getElementById(enableCheckboxId + "_choiceitem_" + i);
+                if (checkbox) {
+
+                  checkbox.disabled = true;
+                  if ( i == email_button_ix ) {
+                      if (!(checkbox.checked)) {
+                          isEnabled = false;
+                      }
+                  }
+                }
+            }
+        }
+        return (isEnabled);
+    }
+
+    com_btactic_twofactorauth_ext.disableEnableMethods = function() {
+        // It only makes sense to update the disable buttons when this function is called
+        // for the second time (__disableEnableMethodsON variable keeps track of it)
+        // because then the checkboxes have been created.
+        //
+        // This is in addition to the regular viewAppButton and viewEmailButton functions
+        // that implement enableDisableChecks.
+
+        var enableCheckboxId = this.getId();
+        com_btactic_twofactorauth_ext.enableCheckboxId = enableCheckboxId;
+
+        // Hardcode number of methods: 2
+        // App button: 0
+        // Email button: 1
+        var app_button_ix = 0;
+        var email_button_ix = 1;
+            for (var i = 0; i < 2; i++) {
+                var checkbox = document.getElementById(enableCheckboxId + "_choiceitem_" + i);
+                if (checkbox) {
+
+                  checkbox.disabled = true;
+                  if ( (this.__disableEnableMethodsON) && ( i == app_button_ix ) ) {
+                      if (!(checkbox.checked)) {
+                          com_btactic_twofactorauth_ext.viewAppButtonThis.disableElement();
+                      } else {
+                          com_btactic_twofactorauth_ext.viewAppButtonThis.enableElement();
+                      }
+                  }
+                  if ( (this.__disableEnableMethodsON) && ( i == email_button_ix ) ) {
+                      if (!(checkbox.checked)) {
+                          com_btactic_twofactorauth_ext.viewEmailButtonThis.disableElement();
+                      } else {
+                          com_btactic_twofactorauth_ext.viewEmailButtonThis.enableElement();
+                      }
+                  }
+                }
+            }
+
+        if (!this.__disableEnableMethodsON) {
+          this.__disableEnableMethodsON = true;
+        }
+
     }
 
     com_btactic_twofactorauth_ext.initDisableEnableMethods = function () {
-        if (!this.__disableEnableMethodsON) {
-          this.__disableEnableMethodsON = true;
+        if (!this.__initDisableEnableMethodsON) {
+          this.__initDisableEnableMethodsON = true;
           this.items[0].items[0].setElementEnabled = com_btactic_twofactorauth_ext.disableEnableMethods;
         }
         return false;
@@ -169,8 +263,9 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                             {ref: "zimbraTwoFactorAuthMethodAllowed", type: _SUPER_MULTIPLE_CHECKBOX_, groupLabel: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodAllowed, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodAllowed, resetToSuperLabel: ZaMsg.NAD_ResetToCOS},
                             {ref: "zimbraTwoFactorAuthMethodEnabled", type: _ZASELECT_MULTIPLE_CHECKBOX_, groupLabel: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodEnabled, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodEnabled, enableDisableChecks: [com_btactic_twofactorauth_ext.initDisableEnableMethods]},
                             // Inspired on ZaMsg.Check_Settings button from ZaDomainXFormView.js
-                            {type:_SPACER_, colSpan:"1"}, {type: _DWT_BUTTON_, label: "Disable App 2FA Method", autoPadding: false, onActivate: "com_btactic_twofactorauth_admin.disableMethod('app')"},
-                            {type:_SPACER_, colSpan:"1"}, {type: _DWT_BUTTON_, label: "Disable Email 2FA Method", autoPadding: false, onActivate: "com_btactic_twofactorauth_admin.disableMethod('email')"},
+                            {type:_SPACER_, colSpan:"1"}, {type: _DWT_BUTTON_, label: "Disable App 2FA Method", autoPadding: false, onActivate: "com_btactic_twofactorauth_admin.disableMethod('app')", enableDisableChecks: [com_btactic_twofactorauth_ext.viewAppButton],enableDisableChangeEventSources: ["zimbraTwoFactorAuthMethodEnabled"]},
+                            {type:_SPACER_, colSpan:"1"}, {type: _DWT_BUTTON_, label: "Disable Email 2FA Method", autoPadding: false, onActivate: "com_btactic_twofactorauth_admin.disableMethod('email')", enableDisableChecks: [com_btactic_twofactorauth_ext.viewEmailButton],enableDisableChangeEventSources: ["zimbraTwoFactorAuthMethodEnabled"]},
+                            {type:_SPACER_, colSpan:"*"},
                             {ref: "zimbraPrefPrimaryTwoFactorAuthMethod", type: _OSELECT1_, label: com_btactic_twofactorauth_admin.zimbraPrefPrimaryTwoFactorAuthMethod, msgName: com_btactic_twofactorauth_admin.zimbraPrefPrimaryTwoFactorAuthMethod},
                             {ref: "zimbraTwoFactorCodeLifetimeForEmail", type: _SUPER_LIFETIME_, txtBoxLabel: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail}
                         ]
