@@ -65,11 +65,11 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         return [
             {
                 value: "app",
-                label: "App"
+                label: com_btactic_twofactorauth_admin.lbl_app
             },
             {
                 value: "email",
-                label: "Email"
+                label: com_btactic_twofactorauth_admin.lbl_email
             }
         ];
     }
