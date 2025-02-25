@@ -13,6 +13,7 @@ import com.zimbra.common.soap.AdminConstants;
 import com.btactic.twofactorauth.service.admin.ClearTwoFactorAuthData;
 import com.btactic.twofactorauth.service.admin.DisableTwoFactorAuth;
 import com.btactic.twofactorauth.service.admin.GetClearTwoFactorAuthDataStatus;
+import com.btactic.twofactorauth.service.admin.SendTwoFactorAuthCode;
 
 public class ZetaTwoFactorAuthAdminService extends AdminService implements DocumentService {
 
@@ -20,6 +21,7 @@ public class ZetaTwoFactorAuthAdminService extends AdminService implements Docum
         dispatcher.registerHandler(AdminConstants.CLEAR_TWO_FACTOR_AUTH_DATA_REQUEST, new ClearTwoFactorAuthData());
         dispatcher.registerHandler(AdminConstants.DISABLE_TWO_FACTOR_AUTH_REQUEST, new DisableTwoFactorAuth());
         dispatcher.registerHandler(AdminConstants.GET_CLEAR_TWO_FACTOR_AUTH_DATA_STATUS_REQUEST, new GetClearTwoFactorAuthDataStatus());
+        dispatcher.registerHandler(AdminConstants.SEND_TWO_FACTOR_AUTH_CODE_REQUEST, new SendTwoFactorAuthCode());
     }
 
 }
