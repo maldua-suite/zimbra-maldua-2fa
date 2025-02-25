@@ -40,9 +40,11 @@ import com.zimbra.cs.account.AuthToken.Usage;
 import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.mailbox.calendar.Util;
 import com.zimbra.cs.mailbox.Mailbox;
+import com.zimbra.cs.mailbox.MailboxManager;
 import com.zimbra.cs.mailbox.OperationContext;
 import com.zimbra.cs.service.admin.AdminDocumentHandler;
 import com.zimbra.cs.service.AuthProvider;
+import com.zimbra.cs.servlet.util.AuthUtil;
 import com.zimbra.cs.util.AccountUtil;
 import com.zimbra.soap.admin.message.SendTwoFactorAuthCodeRequest;
 import com.zimbra.soap.admin.message.SendTwoFactorAuthCodeRequest.SendTwoFactorAuthCodeAction;
@@ -72,7 +74,7 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
         // instead of zcs
         // because the token is sent at the same level of action in `SendTwoFactorAuthCodeTag.java` file
         // ?
-        at = zsc.getAuthToken();
+        at = AuthUtil.getAuthToken(request, zsc);
         authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.TWO_FACTOR_AUTH);
 
         String recoveryEmail = authTokenAcct.getPrefPasswordRecoveryAddress();
@@ -85,8 +87,8 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
             String code = manager.getEmailCode();
             long expiryTime = manager.getEmailExpiryTime();
 
-            Mailbox mbox = DocumentHandler.getRequestedMailbox(zsc);
-            OperationContext octxt = DocumentHandler.getOperationContext(zsc, context);
+            Mailbox mbox = MailboxManager.getInstance().getMailboxByAccountId(authTokenAcct.getId(), false);
+            OperationContext octxt = new OperationContext(authTokenAcct);
             sendEmail(code, expiryTime, recoveryEmail, authTokenAcct, mbox, zsc, octxt);
 
             emailIsSent = true;

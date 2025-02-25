@@ -84,4 +84,9 @@ public class SendTwoFactorAuthCode extends AdminDocumentHandler {
         return false;
     }
 
+    @Override
+    public boolean needsAdminAuth(Map<String, Object> context) {
+        return false;
+    }
+
 }

@@ -30,12 +30,15 @@ import com.zimbra.cs.account.AuthToken.Usage;
 import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.service.admin.AdminDocumentHandler;
 import com.zimbra.cs.service.AuthProvider;
+import com.zimbra.cs.servlet.util.AuthUtil;
 import com.zimbra.soap.admin.message.SendTwoFactorAuthCodeRequest;
 import com.zimbra.soap.admin.message.SendTwoFactorAuthCodeRequest.SendTwoFactorAuthCodeAction;
 import com.zimbra.soap.admin.message.SendTwoFactorAuthCodeResponse;
 import com.zimbra.soap.admin.message.SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus;
 import com.zimbra.soap.JaxbUtil;
 import com.zimbra.soap.ZimbraSoapContext;
+
+import com.zimbra.common.util.ZimbraLog;
 
 public abstract class TwoFactorAuthMethod {
 
@@ -52,7 +55,7 @@ public abstract class TwoFactorAuthMethod {
         // instead of zcs
         // because the token is sent at the same level of action in `SendTwoFactorAuthCodeTag.java` file
         // ?
-        at = zsc.getAuthToken();
+        at = AuthUtil.getAuthToken(request, zsc);
         authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.TWO_FACTOR_AUTH);
 
         SendTwoFactorAuthCodeResponse response = new SendTwoFactorAuthCodeResponse();
