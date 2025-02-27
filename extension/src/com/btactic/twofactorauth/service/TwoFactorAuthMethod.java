@@ -30,6 +30,7 @@ import com.zimbra.cs.account.AuthToken.Usage;
 import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.service.account.AccountDocumentHandler;
 import com.zimbra.cs.service.AuthProvider;
+import com.zimbra.cs.servlet.util.AuthUtil;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeRequest.SendTwoFactorAuthCodeAction;
 import com.zimbra.soap.account.message.SendTwoFactorAuthCodeResponse;
@@ -45,15 +46,8 @@ public abstract class TwoFactorAuthMethod {
         ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
         SendTwoFactorAuthCodeRequest req = JaxbUtil.elementToJaxb(request);
 
-        AuthToken at;
-        Account authTokenAcct;
-
-        // TODO: Should we get the AuthToken from the SendTwoFactorAuthCodeRequest
-        // instead of zcs
-        // because the token is sent at the same level of action in `SendTwoFactorAuthCodeTag.java` file
-        // ?
-        at = zsc.getAuthToken();
-        authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.TWO_FACTOR_AUTH);
+        AuthToken at = AuthUtil.getAuthToken(request, zsc);
+        Account authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.TWO_FACTOR_AUTH);
 
         SendTwoFactorAuthCodeResponse response = new SendTwoFactorAuthCodeResponse();
         SendTwoFactorAuthCodeStatus sendTwoFactorAuthCodeStatus = doMethod(request,context);
