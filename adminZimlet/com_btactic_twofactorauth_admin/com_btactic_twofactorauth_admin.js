@@ -220,6 +220,44 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
 
     com_btactic_twofactorauth_admin.zetaPromoCss = "font-size:16pt; font-weight: bold;";
 
+    // TODO: Include somehow ZsMsg.properties (and their translations) so that this is not hardcoded
+    // in English
+    // Apparently ZaMsg is included but ZsMsg is not
+    // com_btactic_twofactorauth_admin.ZsMsg_twoFactorAuthCodeEmailSubject = ZsMsg.twoFactorAuthCodeEmailSubject
+    // com_btactic_twofactorauth_admin.ZsMsg_twoFactorAuthCodeEmailBodyText = ZsMsg.twoFactorAuthCodeEmailBodyText
+    // com_btactic_twofactorauth_admin.ZsMsg_twoFactorAuthCodeEmailBodyHtml = ZsMsg.twoFactorAuthCodeEmailBodyHtml
+
+    com_btactic_twofactorauth_admin.ZsMsg_twoFactorAuthCodeEmailSubject = 'Two-factor authentication code'
+    com_btactic_twofactorauth_admin.ZsMsg_twoFactorAuthCodeEmailBodyText =
+      'Your two-factor authentication code is: {0}<br />' +
+      'The code expires by: {1}<br />' +
+      '*~*~*~*~*~*~*~*~*~*'
+    com_btactic_twofactorauth_admin.ZsMsg_twoFactorAuthCodeEmailBodyHtml =
+      '&lt;div style="font-family:sans-serif;"&gt;\n' +
+      '&lt;hr&gt;\n' +
+      'Your two-factor authentication code is: {0}&lt;br&gt;\n' +
+      'The code expires by {1}\n' +
+      '&lt;/div&gt;'
+
+    com_btactic_twofactorauth_admin.emailTemplateTip =
+      com_btactic_twofactorauth_admin.lbl_email_template_tip_default_values +
+      '<ul>' +
+      '<li><b>' + com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom + '</b>' + ':' +
+                  com_btactic_twofactorauth_admin.lbl_email_template_tip_from +
+      '</li>' +
+      '<li><b>' + com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailSubject + '</b>' + ':' +
+                  com_btactic_twofactorauth_admin.ZsMsg_twoFactorAuthCodeEmailSubject +
+      '</li>' +
+      '<li><b>' + com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyText + '</b>' + ':' +
+                  com_btactic_twofactorauth_admin.ZsMsg_twoFactorAuthCodeEmailBodyText +
+      '</li>' +
+      '<li><b>' + com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyHtml + '</b>' + ':' +
+                  '<pre>' +
+                      com_btactic_twofactorauth_admin.ZsMsg_twoFactorAuthCodeEmailBodyHtml +
+                  '</pre>' +
+      '</li>' +
+      '</ul>'
+
     // Additional 2FA attributes - Accounts (Definition)
     if (window.ZaAccount && ZaAccount.myXModel && ZaAccount.myXModel.items) {
         ZaAccount.myXModel.items.push({id: "zimbraFeatureTwoFactorAuthAvailable", type: _COS_ENUM_, ref: "attrs/" + "zimbraFeatureTwoFactorAuthAvailable", choices: ZaModel.BOOLEAN_CHOICES});
@@ -351,6 +389,8 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                 items: [
                     {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromoWithImage, colSpan:"*", cssStyle:com_btactic_twofactorauth_admin.zetaPromoCss},
                     {type:_SPACER_, colSpan:"*"},
+                    {type: _DWT_ALERT_, containerCssStyle: "padding-bottom:0px", style: DwtAlert.INFO, iconVisible: true, content : com_btactic_twofactorauth_admin.emailTemplateTip, colSpan : "*"},
+                    {type:_SPACER_, colSpan:"*"},
                     {type:_ZA_TOP_GROUPER_,
                         label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab,
                         items:[
@@ -395,6 +435,8 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                 caseKey:twofactorauthTabIx,
                 items: [
                     {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromoWithImage, colSpan:"*", cssStyle:com_btactic_twofactorauth_admin.zetaPromoCss},
+                    {type:_SPACER_, colSpan:"*"},
+                    {type: _DWT_ALERT_, containerCssStyle: "padding-bottom:0px", style: DwtAlert.INFO, iconVisible: true, content : com_btactic_twofactorauth_admin.emailTemplateTip, colSpan : "*"},
                     {type:_SPACER_, colSpan:"*"},
                     {type:_ZA_TOP_GROUPER_,
                         label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab,
@@ -503,6 +545,8 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         type:_ZAWIZGROUP_,
         items:[
             {label: null, type: _OUTPUT_, value: com_btactic_twofactorauth_admin.zetaPromoWithImage, colSpan:"*", cssStyle:com_btactic_twofactorauth_admin.zetaPromoCss},
+            {type:_SPACER_, colSpan:"*"},
+            {type: _DWT_ALERT_, containerCssStyle: "padding-bottom:0px", style: DwtAlert.INFO, iconVisible: true, content : com_btactic_twofactorauth_admin.emailTemplateTip, colSpan : "*"},
             {type:_SPACER_, colSpan:"*"},
             {
               type: _ZAWIZ_TOP_GROUPER_,
