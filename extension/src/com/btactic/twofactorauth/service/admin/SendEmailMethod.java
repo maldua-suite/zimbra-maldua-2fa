@@ -20,6 +20,7 @@
 package com.btactic.twofactorauth.service.admin;
 
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Map;
@@ -37,6 +38,8 @@ import com.zimbra.common.util.L10nUtil.MsgKey;
 import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.AuthToken;
 import com.zimbra.cs.account.AuthToken.Usage;
+import com.zimbra.cs.account.Config;
+import com.zimbra.cs.account.Domain;
 import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.mailbox.calendar.Util;
 import com.zimbra.cs.mailbox.Mailbox;
@@ -100,15 +103,37 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
         }
     }
 
+    // TODO: Move to an Util class as an static method
+    private String getDomainGlobalDefaultValue(Account account, String attribute, MsgKey defaultTranslation, Object... defaultArgs) throws ServiceException {
+
+        String attributeValue;
+
+        Locale locale = account.getLocale();
+
+        Domain domain = account.getProvisioning().getDomain(account);
+        String domainAttribute = domain.getAttr(attribute);
+
+        Config config = Provisioning.getInstance().getConfig(attribute);
+        String globalConfigAttribute = config.getAttr(attribute, null);
+
+        if ( (domainAttribute != null) && (!(domainAttribute.isEmpty())) ) {
+          attributeValue = MessageFormat.format(domainAttribute, defaultArgs);
+        } else if ( (globalConfigAttribute != null) && (!(globalConfigAttribute.isEmpty())) ) {
+          attributeValue = MessageFormat.format(globalConfigAttribute, defaultArgs);
+        } else {
+          attributeValue = L10nUtil.getMessage(defaultTranslation, locale, defaultArgs);
+        }
+        return attributeValue;
+
+    }
+
     public void sendEmail(String code, long expiryTime, String toEmail, Account account, Mailbox mbox,
             ZimbraSoapContext zsc, OperationContext octxt) throws ServiceException {
         // Inspired from sendAndStoreTwoFactorAuthAccountCode function from EmailChannel.java file
-        Locale locale = account.getLocale();
         String ownerAcctDisplayName = account.getDisplayName();
         if (ownerAcctDisplayName == null) {
             ownerAcctDisplayName = account.getName();
         }
-        String subject = L10nUtil.getMessage(MsgKey.twoFactorAuthCodeEmailSubject, locale, ownerAcctDisplayName);
         String charset = account.getAttr(Provisioning.A_zimbraPrefMailDefaultCharset, MimeConstants.P_CHARSET_UTF8);
         try {
             DateFormat format = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
@@ -123,10 +148,10 @@ public class SendEmailMethod extends TwoFactorAuthMethod {
                         toEmail,
                         code.substring(5));
             }
-            String mimePartText = L10nUtil.getMessage(MsgKey.twoFactorAuthCodeEmailBodyText, locale,
-                    code, dateTime);
-            String mimePartHtml = L10nUtil.getMessage(MsgKey.twoFactorAuthCodeEmailBodyHtml, locale,
-                    code, dateTime);
+            String subject = this.getDomainGlobalDefaultValue(account, "zimbraTwoFactorCodeEmailSubject", MsgKey.twoFactorAuthCodeEmailSubject, ownerAcctDisplayName);
+            String mimePartText = this.getDomainGlobalDefaultValue(account, "zimbraTwoFactorCodeEmailBodyText", MsgKey.twoFactorAuthCodeEmailBodyText, code, dateTime);
+            String mimePartHtml = this.getDomainGlobalDefaultValue(account, "zimbraTwoFactorCodeEmailBodyHtml", MsgKey.twoFactorAuthCodeEmailBodyHtml, code, dateTime);
+
             MimeMultipart mmp = AccountUtil.generateMimeMultipart(mimePartText, mimePartHtml, null);
             MimeMessage mm = AccountUtil.generateMimeMessage(account, account, subject, charset, null, null,
                     toEmail, mmp);
