@@ -411,12 +411,12 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
     }
 
     // Additional 2FA attributes - GlobalConfig (Definition)
-    if (window.GlobalConfig && GlobalConfig.myXModel && GlobalConfig.myXModel.items) {
-        GlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeLifetimeForEmail", type: _COS_MLIFETIME_, ref: "attrs/" + "zimbraTwoFactorCodeLifetimeForEmail"});
-        GlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeEmailFrom", type: _EMAIL_ADDRESS_, ref: "attrs/" + "zimbraTwoFactorCodeEmailFrom"});
-        GlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeEmailSubject", type: _STRING_, ref: "attrs/" + "zimbraTwoFactorCodeEmailSubject"});
-        GlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeEmailBodyText", type: _STRING_, ref: "attrs/" + "zimbraTwoFactorCodeEmailBodyText"});
-        GlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeEmailBodyHtml", type: _STRING_, ref: "attrs/" + "zimbraTwoFactorCodeEmailBodyHtml"});
+    if (window.ZaGlobalConfig && ZaGlobalConfig.myXModel && ZaGlobalConfig.myXModel.items) {
+        ZaGlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeLifetimeForEmail", type: _COS_MLIFETIME_, ref: "attrs/" + "zimbraTwoFactorCodeLifetimeForEmail"});
+        ZaGlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeEmailFrom", type: _EMAIL_ADDRESS_, ref: "attrs/" + "zimbraTwoFactorCodeEmailFrom"});
+        ZaGlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeEmailSubject", type: _STRING_, ref: "attrs/" + "zimbraTwoFactorCodeEmailSubject"});
+        ZaGlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeEmailBodyText", type: _STRING_, ref: "attrs/" + "zimbraTwoFactorCodeEmailBodyText"});
+        ZaGlobalConfig.myXModel.items.push({id: "zimbraTwoFactorCodeEmailBodyHtml", type: _STRING_, ref: "attrs/" + "zimbraTwoFactorCodeEmailBodyHtml"});
     }
 
     // Additional 2FA attributes - GlobalConfig (Edit)
