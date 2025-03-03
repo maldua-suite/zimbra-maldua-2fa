@@ -199,6 +199,10 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
         return false;
     }
 
+    com_btactic_twofactorauth_ext.viewEmailFrom = function() {
+        return false;
+    }
+
     // Using getResource from a ZmZimletBase object does not seem to work in admin
     com_btactic_twofactorauth_admin.zimletImagesPath = "/service/zimlet/com_btactic_twofactorauth_admin/images"
 
@@ -396,7 +400,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                         items:[
                             {ref: "zimbraTwoFactorAuthMethodAllowed", type: _ZASELECT_MULTIPLE_CHECKBOX_, groupLabel: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodAllowed, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodAllowed, labelLocation: _LEFT_},
                             {ref: "zimbraTwoFactorCodeLifetimeForEmail", type: _LIFETIME_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, labelLocation: _LEFT_},
-                            {ref: "zimbraTwoFactorCodeEmailFrom", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, labelLocation: _LEFT_},
+                            {ref: "zimbraTwoFactorCodeEmailFrom", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, labelLocation: _LEFT_, enableDisableChecks: [com_btactic_twofactorauth_ext.viewEmailFrom]},
                             {ref: "zimbraTwoFactorCodeEmailSubject", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailSubject, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailSubject, labelLocation: _LEFT_},
                             {ref: "zimbraTwoFactorCodeEmailBodyText", type: _TEXTAREA_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyText, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyText, labelLocation: _LEFT_},
                             {ref: "zimbraTwoFactorCodeEmailBodyHtml", type: _TEXTAREA_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyHtml, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyHtml, labelLocation: _LEFT_}
@@ -442,7 +446,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
                         label:com_btactic_twofactorauth_admin.zimbraTwoFactorAuthTab,
                         items:[
                             {ref: "zimbraTwoFactorCodeLifetimeForEmail", type: _LIFETIME_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, labelLocation: _LEFT_},
-                            {ref: "zimbraTwoFactorCodeEmailFrom", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, labelLocation: _LEFT_},
+                            {ref: "zimbraTwoFactorCodeEmailFrom", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, labelLocation: _LEFT_, enableDisableChecks: [com_btactic_twofactorauth_ext.viewEmailFrom]},
                             {ref: "zimbraTwoFactorCodeEmailSubject", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailSubject, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailSubject, labelLocation: _LEFT_},
                             {ref: "zimbraTwoFactorCodeEmailBodyText", type: _TEXTAREA_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyText, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyText, labelLocation: _LEFT_},
                             {ref: "zimbraTwoFactorCodeEmailBodyHtml", type: _TEXTAREA_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyHtml, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyHtml, labelLocation: _LEFT_}
@@ -556,7 +560,7 @@ if(ZaSettings && ZaSettings.EnabledZimlet["com_btactic_twofactorauth_admin"]){
               items : [
                 {ref: "zimbraTwoFactorAuthMethodAllowed", type: _ZASELECT_WIZ_MULTIPLE_CHECKBOX_, groupLabel: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodAllowed, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorAuthMethodAllowed, labelLocation: _LEFT_},
                 {ref: "zimbraTwoFactorCodeLifetimeForEmail", type: _LIFETIME_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeLifetimeForEmail},
-                {ref: "zimbraTwoFactorCodeEmailFrom", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom},
+                {ref: "zimbraTwoFactorCodeEmailFrom", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailFrom, enableDisableChecks: [com_btactic_twofactorauth_ext.viewEmailFrom]},
                 {ref: "zimbraTwoFactorCodeEmailSubject", type: _TEXTFIELD_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailSubject, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailSubject},
                 {ref: "zimbraTwoFactorCodeEmailBodyText", type: _TEXTAREA_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyText, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyText},
                 {ref: "zimbraTwoFactorCodeEmailBodyHtml", type: _TEXTAREA_, label: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyHtml, msgName: com_btactic_twofactorauth_admin.zimbraTwoFactorCodeEmailBodyHtml}
