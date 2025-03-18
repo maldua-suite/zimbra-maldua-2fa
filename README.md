@@ -105,6 +105,16 @@ When creating or editing a class of service or an account there is an additional
 
 ![Admin Zimlet for Two Factor Authentication](images/twofactorauthentication-adminzimlet1.png)
 
+### More Email Settings
+
+At Global Settings or at a domain level you can:
+
+- Set Allowed Methods
+- Set Email code lifetime
+- Change Subject and Body of 2FA Email Code template
+
+![Extra Admin Settings for 2FA Email](images/twofactorauthentication-adminzimlet2.png)
+
 ### Disabling 2FA for an user
 
 When disabling 2FA for an user you need to make sure to:
