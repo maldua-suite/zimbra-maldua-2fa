@@ -41,6 +41,12 @@ An additional authentication factor based on TOTP (Time-based One-Time Passwords
 
 ![Verify step](images/twofactorauthentication-verify.png)
 
+### Email 2FA
+
+An additional authentication factor based on sending a code to a secondary email address. No need to use a TOTP app.
+
+![Email based 2FA Login](images/twofactorauthentication-email1.png)
+
 ### Trusted devices
 
 Mark your usual device as trusted so that you are not asked for 2FA each time you login.
