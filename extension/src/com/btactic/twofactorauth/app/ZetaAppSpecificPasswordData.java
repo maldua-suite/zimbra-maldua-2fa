@@ -19,19 +19,7 @@
  */
 package com.btactic.twofactorauth.app;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.zimbra.common.service.ServiceException;
-import com.zimbra.common.util.BEncoding;
-import com.zimbra.common.util.BEncoding.BEncodingException;
-import com.zimbra.common.util.RandomPassword;
-import com.zimbra.common.util.ZimbraLog;
 import com.zimbra.cs.account.auth.twofactor.AppSpecificPasswordData;
-import com.zimbra.cs.account.auth.PasswordUtil;
-import com.zimbra.cs.account.Account;
-import com.zimbra.cs.account.Provisioning;
-import com.zimbra.cs.account.AppSpecificPassword;
 
 public class ZetaAppSpecificPasswordData implements AppSpecificPasswordData {
     private String name;
