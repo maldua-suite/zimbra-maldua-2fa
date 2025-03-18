@@ -22,7 +22,6 @@ package com.btactic.twofactorauth.service.admin;
 import java.util.Map;
 
 import com.zimbra.common.service.ServiceException;
-import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.soap.Element;
 import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.AuthToken;
@@ -37,8 +36,6 @@ import com.zimbra.soap.admin.message.SendTwoFactorAuthCodeResponse;
 import com.zimbra.soap.admin.message.SendTwoFactorAuthCodeResponse.SendTwoFactorAuthCodeStatus;
 import com.zimbra.soap.JaxbUtil;
 import com.zimbra.soap.ZimbraSoapContext;
-
-import com.zimbra.common.util.ZimbraLog;
 
 public abstract class TwoFactorAuthMethod {
 
