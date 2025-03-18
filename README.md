@@ -281,6 +281,11 @@ Automatic installation makes copies of those files here:
 - /opt/zimbra/jetty/webapps/zimbra/js/Preferences_all.js.zgz_2FAQR_COPY
 
 .
+
+## Known bugs
+
+- When a domain is edited you can find additional buttons in the *2FA (Maldua)* tab for uploading Domain certificate and its private certificate. This is actually a `zm-certificate-manager-admin-zimlet`: [https://github.com/Zimbra/zm-certificate-manager-admin-zimlet/pull/8] bug that it has been reported in 2025 so that **Zimbra fixes it hopefully in 2028**.
+
 ## Developer documentation
 
 This documentation is aimed at developers, not at admins.
