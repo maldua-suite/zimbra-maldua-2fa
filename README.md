@@ -88,10 +88,20 @@ Once you have upgraded to ZCS NE 8.8.15 all of the 2FA features that were enable
 When creating or editing a class of service or an account there is an additional tab named **2FA (Maldua)** where you can:
 
 - Enable or disable 2FA feature
+- Allow or Disallow:
+    - Application 2FA method
+    - Email 2FA method
+- Enable or disable:
+    - Application 2FA method
+    - Email 2FA method
 - Check if the user has activated 2FA (Only available in accounts)
 - Check if the account requires 2FA for login
 - Enable or disable application specific passwords or passcodes
 - Setup the numer of scratch codes to generate
+- Choose a primary 2FA method
+- Set Email code lifetime
+- Disable App Two Factor Authentication Method
+- Disable Email Two Factor Authentication Method
 
 ![Admin Zimlet for Two Factor Authentication](images/twofactorauthentication-adminzimlet1.png)
 
