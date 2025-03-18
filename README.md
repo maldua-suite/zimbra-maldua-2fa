@@ -45,6 +45,8 @@ An additional authentication factor based on TOTP (Time-based One-Time Passwords
 
 An additional authentication factor based on sending a code to a secondary email address. No need to use a TOTP app.
 
+**Please note** that when Two Factor Authentication is required (mandatory), email method has been configured but app method has not been configured, recovery address cannot be changed because it is used for Two Factor Authentication and Two Factor Authentication email method cannot be disabled.
+
 ![Email based 2FA Login](images/twofactorauthentication-email1.png)
 
 ### Trusted devices
