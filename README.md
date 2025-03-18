@@ -11,9 +11,9 @@ Thanks to a third-party authenticator such as Google Authenticator Zimbra users 
 
 ## Supported Zimbra versions
 
-- Zimbra 10.0.x
-- Zimbra 9.x
-- Zimbra 8.8.15
+- Zimbra 10.1.x
+
+Please note that for Zimbra 8.8.15, Zimbra 9.0.0 and Zimbra 10.0.x you can use zimbra-ose-2fa v0.8.0.
 
 ## Non support
 
