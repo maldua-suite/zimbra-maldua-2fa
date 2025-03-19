@@ -1,5 +1,19 @@
 #!/bin/bash
 
+function zmacl_disable () {
+    if [[ -x /opt/zimbra/bin/zmacl ]]
+    then
+        /opt/zimbra/bin/zmacl disable
+    fi
+}
+
+function zmacl_enable () {
+    if [[ -x /opt/zimbra/bin/zmacl ]]
+    then
+        /opt/zimbra/bin/zmacl enable
+    fi
+}
+
 function deploy_qr_addon () {
 
 # Set proper users and groups
@@ -83,6 +97,8 @@ if [[ ! -x /opt/zimbra/bin/zmmailboxdctl ]]
   exit 1
 fi
 
+zmacl_disable
+
 chown zimbra:zimbra $(pwd)
 chown zimbra:zimbra com_btactic_twofactorauth_admin.zip
 
@@ -94,5 +110,7 @@ chmod 755 /opt/zimbra/bin/zetatotp
 
 su - zimbra -c 'zmzimletctl -l deploy '"$(pwd)"'/com_btactic_twofactorauth_admin.zip'
 deploy_qr_addon
+
+zmacl_enable
 
 restart_notice
