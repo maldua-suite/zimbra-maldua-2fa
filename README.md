@@ -1,6 +1,6 @@
 # Zimbra OSE 2FA
 
-![Zimbra 2FA Splash](images/zimbra-ose-2fa-splash.png)
+![Zimbra 2FA Splash](images/zimbra-maldua-2fa-splash.png)
 
 ## About
 
@@ -13,11 +13,11 @@ Thanks to a third-party authenticator such as Google Authenticator Zimbra users 
 
 - Zimbra 10.1.x
 
-Please note that for Zimbra 8.8.15, Zimbra 9.0.0 and Zimbra 10.0.x you can use zimbra-ose-2fa v0.8.0.
+Please note that for Zimbra 8.8.15, Zimbra 9.0.0 and Zimbra 10.0.x you can use zimbra-maldua-2fa v0.8.0.
 
 ## Non support
 
-- Z-Push: Please notice that currently Z-Push is not supported by this extension. You will only be able to use Z-Push with an account if you disable 2FA for that specific account. Please check [Z-Push using Application Passcode is not working as expected](https://github.com/maldua-suite/zimbra-ose-2fa/issues/7) for more updated information.
+- Z-Push: Please notice that currently Z-Push is not supported by this extension. You will only be able to use Z-Push with an account if you disable 2FA for that specific account. Please check [Z-Push using Application Passcode is not working as expected](https://github.com/maldua-suite/zimbra-maldua-2fa/issues/7) for more updated information.
 
 - Whitelist IPs: Whitelist internal IPs so that they are not asked for 2FA is not supported. Check: **Trusted devices** instead.
 
@@ -76,12 +76,12 @@ Both *Zimbra OSE 2FA* and current *Zimbra Network Edition* share a design based 
 Take a look at this scenario:
 
 - ZCS OSE 8.8.15 - **Standard ZCS OSE 8.8.15**
-- ZCS OSE 8.8.15 + zimbra-ose-2fa - **zimbra-ose-2fa is installed**
+- ZCS OSE 8.8.15 + zimbra-maldua-2fa - **zimbra-maldua-2fa is installed**
 - Enable/**Use 2FA** features in different Classes of Services or accounts.
-- ZCS OSE 8.8.15 - **Uninstall zimbra-ose-2fa**
+- ZCS OSE 8.8.15 - **Uninstall zimbra-maldua-2fa**
 - ZCS NE 8.8.15 - **Upgrade from ZCS OSE to ZCS NE**
 
-Once you have upgraded to ZCS NE 8.8.15 all of the 2FA features that were enabled/used in **ZCS OSE 8.8.15 + zimbra-ose-2fa** setup should keep working. No need to reissue 2FA codes and ask final users to update their Google Authenticator, Authy or specific Thunderbird/Imap client password.
+Once you have upgraded to ZCS NE 8.8.15 all of the 2FA features that were enabled/used in **ZCS OSE 8.8.15 + zimbra-maldua-2fa** setup should keep working. No need to reissue 2FA codes and ask final users to update their Google Authenticator, Authy or specific Thunderbird/Imap client password.
 
 ## Admin documentation
 
@@ -199,9 +199,9 @@ Finally if you ever need it you can check `zimbraTwoFactorTimeWindowOffset` attr
 ```
 sudo -i # Become root
 cd /tmp
-wget 'https://github.com/maldua-suite/zimbra-ose-2fa/releases/download/v0.9.3/zimbra-ose-2fa_0.9.3.tar.gz'
-tar xzf zimbra-ose-2fa_0.9.3.tar.gz
-cd zimbra-ose-2fa_0.9.3
+wget 'https://github.com/maldua-suite/zimbra-maldua-2fa/releases/download/v0.9.3/zimbra-maldua-2fa_0.9.3.tar.gz'
+tar xzf zimbra-maldua-2fa_0.9.3.tar.gz
+cd zimbra-maldua-2fa_0.9.3
 ```
 
 For regular installation or upgrade you can run:
@@ -226,13 +226,13 @@ su - zimbra -c 'zmmailboxdctl restart'
 ```
 sudo -i # Become root
 cd /tmp
-wget 'https://github.com/maldua-suite/zimbra-ose-2fa/releases/download/v0.9.3/zimbra-ose-2fa_0.9.3.tar.gz'
-tar xzf zimbra-ose-2fa_0.9.3.tar.gz
-chown zimbra:zimbra zimbra-ose-2fa_0.9.3
-chown zimbra:zimbra zimbra-ose-2fa_0.9.3/com_btactic_twofactorauth_admin.zip
-cd zimbra-ose-2fa_0.9.3
+wget 'https://github.com/maldua-suite/zimbra-maldua-2fa/releases/download/v0.9.3/zimbra-maldua-2fa_0.9.3.tar.gz'
+tar xzf zimbra-maldua-2fa_0.9.3.tar.gz
+chown zimbra:zimbra zimbra-maldua-2fa_0.9.3
+chown zimbra:zimbra zimbra-maldua-2fa_0.9.3/com_btactic_twofactorauth_admin.zip
+cd zimbra-maldua-2fa_0.9.3
 cp zetatwofactorauth.jar /opt/zimbra/lib/ext/twofactorauth/zetatwofactorauth.jar
-su - zimbra -c 'zmzimletctl -l deploy /tmp/zimbra-ose-2fa_0.9.3/com_btactic_twofactorauth_admin.zip'
+su - zimbra -c 'zmzimletctl -l deploy /tmp/zimbra-maldua-2fa_0.9.3/com_btactic_twofactorauth_admin.zip'
 
 chown zimbra:zimbra qr
 chown zimbra:zimbra qr/qrcode.js

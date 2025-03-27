@@ -8,13 +8,13 @@ For Admin installation instructions please check [README.md](README.md) instead.
 
 ## Requisites
 
-You have succesfully built zimbra-ose-2fa admin zimlet using [ADMINZIMLET_BUILD.md](ADMINZIMLET_BUILD.md) instructions.
+You have succesfully built zimbra-maldua-2fa admin zimlet using [ADMINZIMLET_BUILD.md](ADMINZIMLET_BUILD.md) instructions.
 
 ## Installation
 
 **Note**: This procedure has to be done on all of your mailboxes.
 
-Get `/tmp/zimbra-ose-2fa/adminZimlet/com_btactic_twofactorauth_admin.zip` from your build machine and copy it to your production machine on `/tmp/com_btactic_twofactorauth_admin.zip` .
+Get `/tmp/zimbra-maldua-2fa/adminZimlet/com_btactic_twofactorauth_admin.zip` from your build machine and copy it to your production machine on `/tmp/com_btactic_twofactorauth_admin.zip` .
 
 This needs to be run as the root user:
 

@@ -23,9 +23,9 @@ apt install ant git make zip
 sudo su - zimbra
 mkdir -p /opt/zimbra/conf/scripts
 cd /opt/zimbra/conf/scripts
-git clone 'https://github.com/maldua-suite/zimbra-ose-2fa.git'
+git clone 'https://github.com/maldua-suite/zimbra-maldua-2fa.git'
 
-cd zimbra-ose-2fa/extension
+cd zimbra-maldua-2fa/extension
 ln -s /opt/zimbra/lib/jars lib
 ```
 
@@ -34,24 +34,24 @@ ln -s /opt/zimbra/lib/jars lib
 ```
 sudo su - zimbra
 
-cd /opt/zimbra/conf/scripts/zimbra-ose-2fa/extension
+cd /opt/zimbra/conf/scripts/zimbra-maldua-2fa/extension
 ant jar
 ```
 
 Sample build output:
 ```
-Buildfile: /opt/zimbra/conf/scripts/zimbra-ose-2fa/extension/build.xml
+Buildfile: /opt/zimbra/conf/scripts/zimbra-maldua-2fa/extension/build.xml
 
 clean:
-   [delete] Deleting directory /opt/zimbra/conf/scripts/zimbra-ose-2fa/extension/build
-   [delete] Deleting: /opt/zimbra/conf/scripts/zimbra-ose-2fa/extension/zetatwofactorauth.jar
-    [mkdir] Created dir: /opt/zimbra/conf/scripts/zimbra-ose-2fa/extension/build
+   [delete] Deleting directory /opt/zimbra/conf/scripts/zimbra-maldua-2fa/extension/build
+   [delete] Deleting: /opt/zimbra/conf/scripts/zimbra-maldua-2fa/extension/zetatwofactorauth.jar
+    [mkdir] Created dir: /opt/zimbra/conf/scripts/zimbra-maldua-2fa/extension/build
 
 compile:
-    [javac] Compiling 48 source files to /opt/zimbra/conf/scripts/zimbra-ose-2fa/extension/build
+    [javac] Compiling 48 source files to /opt/zimbra/conf/scripts/zimbra-maldua-2fa/extension/build
 
 jar:
-      [jar] Building jar: /opt/zimbra/conf/scripts/zimbra-ose-2fa/extension/zetatwofactorauth.jar
+      [jar] Building jar: /opt/zimbra/conf/scripts/zimbra-maldua-2fa/extension/zetatwofactorauth.jar
 
 BUILD SUCCESSFUL
 Total time: 2 seconds
@@ -62,6 +62,6 @@ Total time: 2 seconds
 
 A new jar file should be found at:
 ```
-/opt/zimbra/conf/scripts/zimbra-ose-2fa/extension/zetatwofactorauth.jar
+/opt/zimbra/conf/scripts/zimbra-maldua-2fa/extension/zetatwofactorauth.jar
 ```
 .
