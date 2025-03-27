@@ -1,7 +1,7 @@
 #!/bin/bash
 
 VERSION="$(head -n 1 VERSION)"
-ZIP_DIR="zimbra-ose-2fa_${VERSION}"
+ZIP_DIR="zimbra-maldua-2fa_${VERSION}"
 VERSION_TEMPLATE="9.99.999"
 
 # Build extension

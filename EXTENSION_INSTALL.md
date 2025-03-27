@@ -8,11 +8,11 @@ For Admin installation instructions please check [README.md](README.md) instead.
 
 ## Requisites
 
-You have succesfully built zimbra-ose-2fa using [EXTENSION_BUILD.md](EXTENSION_BUILD.md) instructions.
+You have succesfully built zimbra-maldua-2fa using [EXTENSION_BUILD.md](EXTENSION_BUILD.md) instructions.
 
 ## Installation
 
-Get `/opt/zimbra/conf/scripts/zimbra-ose-2fa/extension/zetatwofactorauth.jar` from your build machine and copy it to your production machine on `/tmp/zetatwofactorauth.jar` .
+Get `/opt/zimbra/conf/scripts/zimbra-maldua-2fa/extension/zetatwofactorauth.jar` from your build machine and copy it to your production machine on `/tmp/zetatwofactorauth.jar` .
 
 This needs to be run as the root user:
 

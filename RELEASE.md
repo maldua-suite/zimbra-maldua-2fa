@@ -26,9 +26,9 @@ apt install ant git make zip sed
 sudo su - zimbra
 mkdir -p /opt/zimbra/conf/scripts
 cd /opt/zimbra/conf/scripts
-git clone 'https://github.com/maldua-suite/zimbra-ose-2fa.git'
+git clone 'https://github.com/maldua-suite/zimbra-maldua-2fa.git'
 
-cd zimbra-ose-2fa/extension
+cd zimbra-maldua-2fa/extension
 ln -s /opt/zimbra/lib/jars lib
 ```
 
@@ -37,7 +37,7 @@ ln -s /opt/zimbra/lib/jars lib
 ```
 sudo su - zimbra
 
-cd /opt/zimbra/conf/scripts/zimbra-ose-2fa/
+cd /opt/zimbra/conf/scripts/zimbra-maldua-2fa/
 ./release.sh
 ```
 
@@ -45,7 +45,7 @@ cd /opt/zimbra/conf/scripts/zimbra-ose-2fa/
 
 A new tar.gz file should be found at:
 ```
-/opt/zimbra/conf/scripts/zimbra-ose-2fa/release/zimbra-ose-2fa_0.1.0.tar.gz
+/opt/zimbra/conf/scripts/zimbra-maldua-2fa/release/zimbra-maldua-2fa_0.1.0.tar.gz
 ```
 where 0.1.0 is the version.
 .
