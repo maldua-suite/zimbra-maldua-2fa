@@ -199,9 +199,9 @@ Finally if you ever need it you can check `zimbraTwoFactorTimeWindowOffset` attr
 ```
 sudo -i # Become root
 cd /tmp
-wget 'https://github.com/maldua-suite/zimbra-maldua-2fa/releases/download/v0.9.3/zimbra-maldua-2fa_0.9.3.tar.gz'
-tar xzf zimbra-maldua-2fa_0.9.3.tar.gz
-cd zimbra-maldua-2fa_0.9.3
+wget 'https://github.com/maldua-suite/zimbra-maldua-2fa/releases/download/v0.9.4/zimbra-maldua-2fa_0.9.4.tar.gz'
+tar xzf zimbra-maldua-2fa_0.9.4.tar.gz
+cd zimbra-maldua-2fa_0.9.4
 ```
 
 For regular installation or upgrade you can run:
@@ -221,18 +221,18 @@ su - zimbra -c 'zmmailboxdctl restart'
 
 **Notice:** In a Multi-Server cluster these commands have to be run on each one of the mailbox nodes.
 
-**WARNING:** Please change **0.9.3** with whatever it's the latest released version.
+**WARNING:** Please change **0.9.4** with whatever it's the latest released version.
 
 ```
 sudo -i # Become root
 cd /tmp
-wget 'https://github.com/maldua-suite/zimbra-maldua-2fa/releases/download/v0.9.3/zimbra-maldua-2fa_0.9.3.tar.gz'
-tar xzf zimbra-maldua-2fa_0.9.3.tar.gz
-chown zimbra:zimbra zimbra-maldua-2fa_0.9.3
-chown zimbra:zimbra zimbra-maldua-2fa_0.9.3/com_btactic_twofactorauth_admin.zip
-cd zimbra-maldua-2fa_0.9.3
+wget 'https://github.com/maldua-suite/zimbra-maldua-2fa/releases/download/v0.9.4/zimbra-maldua-2fa_0.9.4.tar.gz'
+tar xzf zimbra-maldua-2fa_0.9.4.tar.gz
+chown zimbra:zimbra zimbra-maldua-2fa_0.9.4
+chown zimbra:zimbra zimbra-maldua-2fa_0.9.4/com_btactic_twofactorauth_admin.zip
+cd zimbra-maldua-2fa_0.9.4
 cp zetatwofactorauth.jar /opt/zimbra/lib/ext/twofactorauth/zetatwofactorauth.jar
-su - zimbra -c 'zmzimletctl -l deploy /tmp/zimbra-maldua-2fa_0.9.3/com_btactic_twofactorauth_admin.zip'
+su - zimbra -c 'zmzimletctl -l deploy /tmp/zimbra-maldua-2fa_0.9.4/com_btactic_twofactorauth_admin.zip'
 
 chown zimbra:zimbra qr
 chown zimbra:zimbra qr/qrcode.js
