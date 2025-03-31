@@ -1,6 +1,6 @@
 <project name="zetatwofactorauth" default="jar" basedir=".">
     <description>
-        Build file for the Zimbra OSE 2FA Extension.
+        Build file for the Maldua Zimbra 2FA Extension.
     </description>
 
     <property name="lib"   value="lib/"/>

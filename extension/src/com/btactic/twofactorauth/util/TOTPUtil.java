@@ -1,6 +1,6 @@
 /*
  * ***** BEGIN LICENSE BLOCK *****
- * Zimbra OSE 2FA Administration zimlet
+ * Maldua Zimbra 2FA Administration zimlet
  * Copyright (C) 2025 BTACTIC, S.C.C.L.
  *
  * Zimbra Collaboration Suite Server

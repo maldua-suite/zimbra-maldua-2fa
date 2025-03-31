@@ -1,4 +1,4 @@
-# Build Zimbra OSE 2FA Admin Zimlet
+# Build Maldua Zimbra 2FA Admin Zimlet
 
 ## Introduction
 

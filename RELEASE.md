@@ -1,4 +1,4 @@
-# Release Zimbra OSE 2FA Extension and its admin Zimlet
+# Release Maldua Zimbra 2FA Extension and its admin Zimlet
 
 ## Introduction
 

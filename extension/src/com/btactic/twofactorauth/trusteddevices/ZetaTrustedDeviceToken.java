@@ -1,6 +1,6 @@
 /*
  * ***** BEGIN LICENSE BLOCK *****
- * Zimbra OSE 2FA Extension
+ * Maldua Zimbra 2FA Extension
  * Copyright (C) 2023 BTACTIC, S.C.C.L.
  *
  * Zimbra Collaboration Suite Server

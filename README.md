@@ -1,10 +1,10 @@
-# Zimbra OSE 2FA
+# Maldua's Zimbra 2FA
 
 ![Zimbra 2FA Splash](images/zimbra-maldua-2fa-splash.png)
 
 ## About
 
-**MALDUA'S Zimbra OSE 2FA Extension & Administration Zimlet** brought to you by [BTACTIC, open source & cloud solutions](https://www.btactic.com).
+**MALDUA'S Zimbra 2FA Extension & Administration Zimlet** brought to you by [BTACTIC, open source & cloud solutions](https://www.btactic.com).
 
 Two-factor authentication adds an additional layer of security to your Zimbra login.
 Thanks to a third-party authenticator such as Google Authenticator Zimbra users are now required to enter a randomly generated code.
@@ -71,7 +71,7 @@ Scratch or one-time use codes are generated so that you can write them down in a
 
 ### Network Edition binary compatibility upgrade
 
-Both *Zimbra OSE 2FA* and current *Zimbra Network Edition* share a design based on a public codebase from around 2016.
+Both *Maldua Zimbra 2FA* and current *Zimbra Network Edition* share a design based on a public codebase from around 2016.
 
 Take a look at this scenario:
 
@@ -363,7 +363,7 @@ So... this extension is an affirmative answer to this question...
 ### License (Extension)
 
 ```
-Zimbra OSE 2FA Extension
+Maldua Zimbra 2FA Extension
 Copyright (C) 2023 BTACTIC, S.C.C.L.
 
 Zimbra Collaboration Suite Server
@@ -383,7 +383,7 @@ If not, see <http://www.gnu.org/licenses/>.
 ### License (Administration zimlet)
 
 ```
-Zimbra OSE 2FA Administration zimlet
+Maldua Zimbra 2FA Administration zimlet
 Copyright (C) 2023 BTACTIC, S.C.C.L.
 
 This program is free software: you can redistribute it and/or modify
@@ -403,7 +403,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 ### License (QR Addon)
 
 ```
-Zimbra OSE 2FA QR Addon
+Maldua Zimbra 2FA QR Addon
 Copyright (C) 2023 BTACTIC, S.C.C.L.
 
 This program is free software: you can redistribute it and/or modify
