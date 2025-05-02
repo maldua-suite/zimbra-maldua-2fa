@@ -1,4 +1,4 @@
-# Install Zimbra OSE 2FA Extension
+# Install Maldua Zimbra 2FA Extension
 
 ## Warning
 

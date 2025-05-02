@@ -1,6 +1,6 @@
 /*
  * ***** BEGIN LICENSE BLOCK *****
- * Zimbra OSE 2FA QR
+ * Maldua Zimbra 2FA QR
  * Copyright (C) 2023 BTACTIC, S.C.C.L.
  *
  * This program is free software: you can redistribute it and/or modify

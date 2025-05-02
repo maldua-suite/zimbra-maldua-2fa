@@ -1,4 +1,4 @@
-# Build Zimbra OSE 2FA Extension
+# Build Maldua Zimbra 2FA Extension
 
 ## Introduction
 

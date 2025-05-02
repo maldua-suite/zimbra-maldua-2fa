@@ -1,6 +1,6 @@
 /*
  * ***** BEGIN LICENSE BLOCK *****
- * Zimbra OSE 2FA Extension
+ * Maldua Zimbra 2FA Extension
  * Copyright (C) 2023 BTACTIC, S.C.C.L.
  *
  * Zimbra Collaboration Suite Server
@@ -55,8 +55,6 @@ import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDeviceToken;
 import com.zimbra.cs.account.ldap.ChangePasswordListener;
 import com.zimbra.cs.account.ldap.LdapLockoutPolicy;
 import com.zimbra.cs.ldap.LdapDateUtil;
-import com.btactic.twofactorauth.CredentialGenerator;
-import com.btactic.twofactorauth.TOTPCredentials;
 
 /**
  * This class is the main entry point for two-factor authentication.

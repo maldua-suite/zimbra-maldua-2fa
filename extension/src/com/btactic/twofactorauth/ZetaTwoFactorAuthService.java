@@ -1,5 +1,5 @@
 /*
- * Zimbra OSE 2FA Extension
+ * Maldua Zimbra 2FA Extension
  * Copyright (C) 2023 BTACTIC, S.C.C.L.
  */
 package com.btactic.twofactorauth;
@@ -10,16 +10,17 @@ import com.zimbra.cs.service.account.AccountService;
 
 import com.zimbra.common.soap.AccountConstants;
 
-import com.btactic.twofactorauth.soap.EnableTwoFactorAuth;
-import com.btactic.twofactorauth.soap.DisableTwoFactorAuth;
-import com.btactic.twofactorauth.soap.CreateAppSpecificPassword;
-import com.btactic.twofactorauth.soap.RevokeAppSpecificPassword;
-import com.btactic.twofactorauth.soap.GetAppSpecificPasswords;
-import com.btactic.twofactorauth.soap.GetScratchCodes;
-import com.btactic.twofactorauth.soap.GenerateScratchCodes;
-import com.btactic.twofactorauth.soap.GetTrustedDevices;
-import com.btactic.twofactorauth.soap.RevokeTrustedDevice;
-import com.btactic.twofactorauth.soap.RevokeOtherTrustedDevices;
+import com.btactic.twofactorauth.service.EnableTwoFactorAuth;
+import com.btactic.twofactorauth.service.DisableTwoFactorAuth;
+import com.btactic.twofactorauth.service.CreateAppSpecificPassword;
+import com.btactic.twofactorauth.service.RevokeAppSpecificPassword;
+import com.btactic.twofactorauth.service.GetAppSpecificPasswords;
+import com.btactic.twofactorauth.service.GetScratchCodes;
+import com.btactic.twofactorauth.service.GenerateScratchCodes;
+import com.btactic.twofactorauth.service.GetTrustedDevices;
+import com.btactic.twofactorauth.service.RevokeTrustedDevice;
+import com.btactic.twofactorauth.service.RevokeOtherTrustedDevices;
+import com.btactic.twofactorauth.service.SendTwoFactorAuthCode;
 
 public class ZetaTwoFactorAuthService extends AccountService implements DocumentService {
 
@@ -34,6 +35,7 @@ public class ZetaTwoFactorAuthService extends AccountService implements Document
         dispatcher.registerHandler(AccountConstants.GET_TRUSTED_DEVICES_REQUEST, new GetTrustedDevices());
         dispatcher.registerHandler(AccountConstants.REVOKE_TRUSTED_DEVICE_REQUEST, new RevokeTrustedDevice());
         dispatcher.registerHandler(AccountConstants.REVOKE_OTHER_TRUSTED_DEVICES_REQUEST, new RevokeOtherTrustedDevices());
+        dispatcher.registerHandler(AccountConstants.SEND_TWO_FACTOR_AUTH_CODE_REQUEST, new SendTwoFactorAuthCode());
     }
 
 }

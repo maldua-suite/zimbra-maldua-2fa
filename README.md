@@ -1,19 +1,19 @@
-# Zimbra OSE 2FA
+# Maldua's Zimbra 2FA
 
 ![Zimbra 2FA Splash](images/zimbra-maldua-2fa-splash.png)
 
 ## About
 
-**MALDUA'S Zimbra OSE 2FA Extension & Administration Zimlet** brought to you by [BTACTIC, open source & cloud solutions](https://www.btactic.com).
+**MALDUA'S Zimbra 2FA Extension & Administration Zimlet** brought to you by [BTACTIC, open source & cloud solutions](https://www.btactic.com).
 
 Two-factor authentication adds an additional layer of security to your Zimbra login.
 Thanks to a third-party authenticator such as Google Authenticator Zimbra users are now required to enter a randomly generated code.
 
 ## Supported Zimbra versions
 
-- Zimbra 10.0.x
-- Zimbra 9.x
-- Zimbra 8.8.15
+- Zimbra 10.1.x
+
+Please note that for Zimbra 8.8.15, Zimbra 9.0.0 and Zimbra 10.0.x you can use zimbra-maldua-2fa v0.8.0.
 
 ## Non support
 
@@ -41,6 +41,14 @@ An additional authentication factor based on TOTP (Time-based One-Time Passwords
 
 ![Verify step](images/twofactorauthentication-verify.png)
 
+### Email 2FA
+
+An additional authentication factor based on sending a code to a secondary email address. No need to use a TOTP app.
+
+**Please note** that when Two Factor Authentication is required (mandatory), email method has been configured but app method has not been configured, recovery address cannot be changed because it is used for Two Factor Authentication and Two Factor Authentication email method cannot be disabled.
+
+![Email based 2FA Login](images/twofactorauthentication-email1.png)
+
 ### Trusted devices
 
 Mark your usual device as trusted so that you are not asked for 2FA each time you login.
@@ -63,7 +71,7 @@ Scratch or one-time use codes are generated so that you can write them down in a
 
 ### Network Edition binary compatibility upgrade
 
-Both *Zimbra OSE 2FA* and current *Zimbra Network Edition* share a design based on a public codebase from around 2016.
+Both *Maldua Zimbra 2FA* and current *Zimbra Network Edition* share a design based on a public codebase from around 2016.
 
 Take a look at this scenario:
 
@@ -82,12 +90,32 @@ Once you have upgraded to ZCS NE 8.8.15 all of the 2FA features that were enable
 When creating or editing a class of service or an account there is an additional tab named **2FA (Maldua)** where you can:
 
 - Enable or disable 2FA feature
+- Allow or Disallow:
+    - Application 2FA method
+    - Email 2FA method
+- Enable or disable:
+    - Application 2FA method
+    - Email 2FA method
 - Check if the user has activated 2FA (Only available in accounts)
 - Check if the account requires 2FA for login
 - Enable or disable application specific passwords or passcodes
 - Setup the numer of scratch codes to generate
+- Choose a primary 2FA method
+- Set Email code lifetime
+- Disable App Two Factor Authentication Method
+- Disable Email Two Factor Authentication Method
 
 ![Admin Zimlet for Two Factor Authentication](images/twofactorauthentication-adminzimlet1.png)
+
+### More Email Settings
+
+At Global Settings or at a domain level you can:
+
+- Set Allowed Methods
+- Set Email code lifetime
+- Change Subject and Body of 2FA Email Code template
+
+![Extra Admin Settings for 2FA Email](images/twofactorauthentication-adminzimlet2.png)
 
 ### Disabling 2FA for an user
 
@@ -99,6 +127,22 @@ When disabling 2FA for an user you need to make sure to:
 
 
 Otherwise the user will be asked for the 2FA code when loging in if he has ever setup 2FA in the past.
+
+## CLI commands
+
+### zetatotp
+
+Given an account and its secret you can generate its TOTP code without the need of a Google Authenticator app.
+This is useful is, as an admin, you don't want to install a Google Authenticator app yourself but you want to try how the feature works.
+
+```
+Usage:
+zetatotp --account ACCOUNT --secret SECRET
+
+Example:
+zetatotp --account name@example.net --secret ASE34553
+Current TOTP code is: 436244
+```
 
 ### Extra documentation
 
@@ -140,7 +184,7 @@ because you won't need it anymore.
 As per Zimbra installation requisites your Operating System should have its time in sync with global clocks thanks to tools such as:
 
 - ntpd
-- [systemd-tymesyncd](https://wiki.archlinux.org/title/systemd-timesyncd)
+- [systemd-timesyncd](https://wiki.archlinux.org/title/systemd-timesyncd)
 
 otherwise the final user might get a wrong password even if it's the correct one.
 
@@ -155,9 +199,9 @@ Finally if you ever need it you can check `zimbraTwoFactorTimeWindowOffset` attr
 ```
 sudo -i # Become root
 cd /tmp
-wget 'https://github.com/maldua-suite/zimbra-maldua-2fa/releases/download/v0.8.0/zimbra-ose-2fa_0.8.0.tar.gz'
-tar xzf zimbra-ose-2fa_0.8.0.tar.gz
-cd zimbra-ose-2fa_0.8.0
+wget 'https://github.com/maldua-suite/zimbra-maldua-2fa/releases/download/v0.9.4/zimbra-maldua-2fa_0.9.4.tar.gz'
+tar xzf zimbra-maldua-2fa_0.9.4.tar.gz
+cd zimbra-maldua-2fa_0.9.4
 ```
 
 For regular installation or upgrade you can run:
@@ -177,18 +221,18 @@ su - zimbra -c 'zmmailboxdctl restart'
 
 **Notice:** In a Multi-Server cluster these commands have to be run on each one of the mailbox nodes.
 
-**WARNING:** Please change **0.8.0** with whatever it's the latest released version.
+**WARNING:** Please change **0.9.4** with whatever it's the latest released version.
 
 ```
 sudo -i # Become root
 cd /tmp
-wget 'https://github.com/maldua-suite/zimbra-maldua-2fa/releases/download/v0.8.0/zimbra-ose-2fa_0.8.0.tar.gz'
-tar xzf zimbra-ose-2fa_0.8.0.tar.gz
-chown zimbra:zimbra zimbra-ose-2fa_0.8.0
-chown zimbra:zimbra zimbra-ose-2fa_0.8.0/com_btactic_twofactorauth_admin.zip
-cd zimbra-ose-2fa_0.8.0
+wget 'https://github.com/maldua-suite/zimbra-maldua-2fa/releases/download/v0.9.4/zimbra-maldua-2fa_0.9.4.tar.gz'
+tar xzf zimbra-maldua-2fa_0.9.4.tar.gz
+chown zimbra:zimbra zimbra-maldua-2fa_0.9.4
+chown zimbra:zimbra zimbra-maldua-2fa_0.9.4/com_btactic_twofactorauth_admin.zip
+cd zimbra-maldua-2fa_0.9.4
 cp zetatwofactorauth.jar /opt/zimbra/lib/ext/twofactorauth/zetatwofactorauth.jar
-su - zimbra -c 'zmzimletctl -l deploy /tmp/zimbra-ose-2fa_0.8.0/com_btactic_twofactorauth_admin.zip'
+su - zimbra -c 'zmzimletctl -l deploy /tmp/zimbra-maldua-2fa_0.9.4/com_btactic_twofactorauth_admin.zip'
 
 chown zimbra:zimbra qr
 chown zimbra:zimbra qr/qrcode.js
@@ -265,6 +309,11 @@ Automatic installation makes copies of those files here:
 - /opt/zimbra/jetty/webapps/zimbra/js/Preferences_all.js.zgz_2FAQR_COPY
 
 .
+
+## Known bugs
+
+- When a domain is edited you can find additional buttons in the *2FA (Maldua)* tab for uploading Domain certificate and its private certificate. This is actually a `zm-certificate-manager-admin-zimlet`: [https://github.com/Zimbra/zm-certificate-manager-admin-zimlet/pull/8] bug that it has been reported in 2025 so that **Zimbra fixes it hopefully in 2028**.
+
 ## Developer documentation
 
 This documentation is aimed at developers, not at admins.
@@ -314,7 +363,7 @@ So... this extension is an affirmative answer to this question...
 ### License (Extension)
 
 ```
-Zimbra OSE 2FA Extension
+Maldua Zimbra 2FA Extension
 Copyright (C) 2023 BTACTIC, S.C.C.L.
 
 Zimbra Collaboration Suite Server
@@ -334,7 +383,7 @@ If not, see <http://www.gnu.org/licenses/>.
 ### License (Administration zimlet)
 
 ```
-Zimbra OSE 2FA Administration zimlet
+Maldua Zimbra 2FA Administration zimlet
 Copyright (C) 2023 BTACTIC, S.C.C.L.
 
 This program is free software: you can redistribute it and/or modify
@@ -354,7 +403,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 ### License (QR Addon)
 
 ```
-Zimbra OSE 2FA QR Addon
+Maldua Zimbra 2FA QR Addon
 Copyright (C) 2023 BTACTIC, S.C.C.L.
 
 This program is free software: you can redistribute it and/or modify

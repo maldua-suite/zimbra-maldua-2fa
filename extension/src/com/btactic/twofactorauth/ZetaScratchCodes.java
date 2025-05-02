@@ -1,6 +1,6 @@
 /*
  * ***** BEGIN LICENSE BLOCK *****
- * Zimbra OSE 2FA Extension
+ * Maldua Zimbra 2FA Extension
  * Copyright (C) 2023 BTACTIC, S.C.C.L.
  *
  * Zimbra Collaboration Suite Server
@@ -58,7 +58,7 @@ import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDeviceToken;
 import com.zimbra.cs.account.ldap.ChangePasswordListener;
 import com.zimbra.cs.account.ldap.LdapLockoutPolicy;
 import com.zimbra.cs.ldap.LdapDateUtil;
-import com.btactic.twofactorauth.CredentialGenerator;
+import com.btactic.twofactorauth.credentials.CredentialGenerator;
 
 /**
  * This class is the main entry point for two-factor authentication.
@@ -251,23 +251,6 @@ public class ZetaScratchCodes implements ScratchCodes {
             failedLogin();
             ZimbraLog.account.error("invalid scratch code");
             throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "invalid scratch code");
-        }
-    }
-
-    public Boolean isScratchCode(String code) throws ServiceException {
-        int totpLength = getGlobalConfig().getTwoFactorCodeLength();
-        int scratchCodeLength = getGlobalConfig().getTwoFactorScratchCodeLength();
-        if (totpLength == scratchCodeLength) {
-            try {
-                Integer.valueOf(code);
-                //most likely a TOTP code, but theoretically possible for this to be a scratch code with only digits
-                return null;
-            } catch (NumberFormatException e) {
-                //has alnum characters, so must be a scratch code
-                return true;
-            }
-        } else {
-            return code.length() != totpLength;
         }
     }
 

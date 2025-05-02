@@ -1,4 +1,4 @@
-# Install Zimbra OSE 2FA Admin Zimlet
+# Install Maldua Zimbra 2FA Admin Zimlet
 
 ## Warning
 
