@@ -116,8 +116,10 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
           sendCode(email,context);
         } else if (twoFactorCode != null) {
           validateCode(twoFactorCode, context);
-          manager.generateCredentials();
-          manager.enableTwoFactorAuth();
+          if (!(account.isTwoFactorAuthEnabled())) {
+              manager.generateCredentials();
+              manager.enableTwoFactorAuth();
+          }
           manager.addEnabledMethod(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL);
         } else {
           throw ServiceException.FAILURE("Non supported wizard input.", null);
@@ -214,8 +216,10 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
             if (manager.isEnabledMethod(AccountConstants.E_TWO_FACTOR_METHOD_APP)) {
                 encodeAlreadyEnabled(response);
             } else {
-                TOTPCredentials newCredentials = manager.generateCredentials();
-                response.setSecret(newCredentials.getSecret());
+                if (!(account.isTwoFactorAuthEnabled())) {
+                    manager.generateCredentials();
+                }
+                response.setSecret(manager.loadSharedSecret());
                 try {
                 String token = AuthProvider.getAuthToken(account, Usage.ENABLE_TWO_FACTOR_AUTH).getEncoded();
                 com.zimbra.soap.account.type.AuthToken at = new com.zimbra.soap.account.type.AuthToken(token, false);
@@ -253,7 +257,9 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
                 throw AuthFailedServiceException.AUTH_FAILED("auth token and password missing");
             }
             manager.authenticateTOTP(twoFactorCode.getText());
-            manager.enableTwoFactorAuth();
+            if (!(account.isTwoFactorAuthEnabled())) {
+                manager.enableTwoFactorAuth();
+            }
             manager.addEnabledMethod(AccountConstants.E_TWO_FACTOR_METHOD_APP);
             ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
             response.setScratchCodes(scratchCodesManager.getCodes());
