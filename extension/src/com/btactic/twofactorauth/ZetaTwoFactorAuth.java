@@ -432,6 +432,33 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         account.addTwoFactorAuthMethodEnabled(twoFactorAuthMethodEnabled);
     }
 
+    // Is either 2FA method (app and/or email) enabled by the user?
+    private boolean internalIsEnabledMethod(String twoFactorAuthMethodEnabled) throws ServiceException {
+        String[] enabledMethods = account.getTwoFactorAuthMethodEnabled();
+        if(Arrays.asList(enabledMethods).contains(twoFactorAuthMethodEnabled)){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // Is either 2FA method (app and/or email) enabled by the user?
+    public boolean isEnabledMethod(String twoFactorAuthMethodEnabled) throws ServiceException {
+        if (twoFactorAuthMethodEnabled == AccountConstants.E_TWO_FACTOR_METHOD_APP) {
+            if (internalIsEnabledMethod(twoFactorAuthMethodEnabled)) {
+                return true;
+            } else {
+                // Legacy fallback
+                // Detect when app TwoFactorAuth was enabled
+                // but there was not an specific app saved
+                boolean noEnabledMethods = (this.enabledTwoFactorAuthMethodsCount() == 0) ;
+                return (noEnabledMethods && account.isTwoFactorAuthEnabled());
+            }
+        } else {
+            return internalIsEnabledMethod(twoFactorAuthMethodEnabled);
+        }
+    }
+
     // Is either 2FA method (app and/or email) allowed to an user to use?
     public boolean isAllowedMethod(String twoFactorAuthMethodAllowed) throws ServiceException {
         String[] allowedMethods = account.getTwoFactorAuthMethodAllowed();
