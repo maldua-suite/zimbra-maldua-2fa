@@ -213,7 +213,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         account.setTwoFactorAuthSecret(encrypted);
     }
 
-    private String loadSharedSecret() throws ServiceException {
+    public String loadSharedSecret() throws ServiceException {
         String encryptedSecret = account.getTwoFactorAuthSecret();
         hasStoredSecret = encryptedSecret != null;
         if (encryptedSecret != null) {
