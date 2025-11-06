@@ -17,8 +17,6 @@ Please note that for Zimbra 8.8.15, Zimbra 9.0.0 and Zimbra 10.0.x you can use z
 
 ## Non support
 
-- Z-Push: Please notice that currently Z-Push is not supported by this extension. You will only be able to use Z-Push with an account if you disable 2FA for that specific account. Please check [Z-Push using Application Passcode is not working as expected](https://github.com/maldua-suite/zimbra-maldua-2fa/issues/7) for more updated information.
-
 - Whitelist IPs: Whitelist internal IPs so that they are not asked for 2FA is not supported. Check: **Trusted devices** instead.
 
 ## Features
@@ -143,6 +141,15 @@ Example:
 zetatotp --account name@example.net --secret ASE34553
 Current TOTP code is: 436244
 ```
+
+## Z-Push integration
+
+If you try to use Z-Push you will find out that:
+
+- If 2FA is turned off for the account you can login with the account's default password.
+- If 2FA is turned on  for the account you won't be able to use an Application passcode as expected.
+
+Please check [Maldua's Zimbra ActiveSync Auth](https://github.com/maldua-suite/zimbra-maldua-activesync-auth) if you want an actual Z-Push integration that enables you to use Application passcodes directly from Z-Push.
 
 ## Extra documentation
 
