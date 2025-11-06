@@ -144,7 +144,7 @@ zetatotp --account name@example.net --secret ASE34553
 Current TOTP code is: 436244
 ```
 
-### Extra documentation
+## Extra documentation
 
 In addition to the documentation you can find in this README you should be also checking:
 
@@ -156,9 +156,9 @@ In addition to the documentation you can find in this README you should be also 
 
 Not everything described there applies to this Open Source implementation but it can be helpful to understand how the technology works.
 
-### Upgrade
+## Upgrade
 
-#### From 0.7.0 version
+### From 0.7.0 version
 
 If you have installed 0.7.0 version please run as root:
 ```
@@ -167,7 +167,7 @@ cp /opt/zimbra/jetty/webapps/zimbra/js/Preferences_all.js_2FAQR_COPY /opt/zimbra
 ```
 before running the installation.
 
-#### From 0.6.0 version
+### From 0.6.0 version
 
 If you have installed 0.6.0 version please uninstall the QR zimlet with:
 
@@ -177,9 +177,9 @@ su - zimbra -c 'zmzimletctl undeploy com_btactic_twofactorauth_qr'
 
 because you won't need it anymore.
 
-### Installation
+## Installation
 
-#### Time sync warning
+### Time sync warning
 
 As per Zimbra installation requisites your Operating System should have its time in sync with global clocks thanks to tools such as:
 
@@ -192,7 +192,7 @@ Please notice that the device where Google Authenticator is needs its time to be
 
 Finally if you ever need it you can check `zimbraTwoFactorTimeWindowOffset` attribute described on [Steps to fix 2FA setup error - Zimbra Wiki](https://wiki.zimbra.com/wiki/Steps_to_fix_two_factor_auth_setup_error).
 
-#### Automatic installation
+### Automatic installation
 
 **Notice:** In a Multi-Server cluster these commands have to be run on each one of the mailbox nodes.
 
@@ -217,7 +217,7 @@ sudo -i # Become root
 su - zimbra -c 'zmmailboxdctl restart'
 ```
 
-#### Manual installation
+### Manual installation
 
 **Notice:** In a Multi-Server cluster these commands have to be run on each one of the mailbox nodes.
 
@@ -290,7 +290,7 @@ su - zimbra -c 'zmmailboxdctl restart'
 ```
 .
 
-### Additional notes
+## Additional notes
 
 The QR addon modifies some stock Zimbra files.
 
