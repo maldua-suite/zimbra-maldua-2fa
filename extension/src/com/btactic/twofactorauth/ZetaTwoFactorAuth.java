@@ -397,47 +397,76 @@ public class ZetaTwoFactorAuth extends BaseTwoFactorAuthComponent implements Two
         account.addTwoFactorAuthMethodEnabled(twoFactorAuthMethodEnabled);
     }
 
-    // Is either 2FA method (app and/or email) enabled by the user?
+    /**
+     * Internal method to check if a 2FA method is enabled.
+     * Optimized to avoid creating ArrayList for each check.
+     *
+     * @param twoFactorAuthMethodEnabled the method to check
+     * @return true if the method is enabled
+     * @throws ServiceException if account attributes cannot be read
+     */
     private boolean internalIsEnabledMethod(String twoFactorAuthMethodEnabled) throws ServiceException {
         String[] enabledMethods = account.getTwoFactorAuthMethodEnabled();
-        if(Arrays.asList(enabledMethods).contains(twoFactorAuthMethodEnabled)){
-            return true;
-        } else {
-            return false;
+        // Direct array iteration is more efficient than Arrays.asList().contains()
+        for (String method : enabledMethods) {
+            if (method.equals(twoFactorAuthMethodEnabled)) {
+                return true;
+            }
         }
+        return false;
     }
 
-    // Is either 2FA method (app and/or email) enabled by the user?
+    /**
+     * Checks if a specific 2FA method is enabled by the user.
+     * Includes legacy fallback for app-based 2FA.
+     *
+     * @param twoFactorAuthMethodEnabled the method to check (e.g., "app", "email")
+     * @return true if the method is enabled
+     * @throws ServiceException if account attributes cannot be read
+     */
     public boolean isEnabledMethod(String twoFactorAuthMethodEnabled) throws ServiceException {
         if (twoFactorAuthMethodEnabled == AccountConstants.E_TWO_FACTOR_METHOD_APP) {
             if (internalIsEnabledMethod(twoFactorAuthMethodEnabled)) {
                 return true;
             } else {
-                // Legacy fallback
-                // Detect when app TwoFactorAuth was enabled
-                // but there was not an specific app saved
-                boolean noEnabledMethods = (this.enabledTwoFactorAuthMethodsCount() == 0) ;
-                return (noEnabledMethods && account.isTwoFactorAuthEnabled());
+                // Legacy fallback: detect when app TwoFactorAuth was enabled
+                // but there was not a specific app method saved
+                int methodCount = enabledTwoFactorAuthMethodsCount();
+                return (methodCount == 0 && account.isTwoFactorAuthEnabled());
             }
         } else {
             return internalIsEnabledMethod(twoFactorAuthMethodEnabled);
         }
     }
 
-    // Is either 2FA method (app and/or email) allowed to an user to use?
+    /**
+     * Checks if a specific 2FA method is allowed for the user.
+     * Optimized to avoid creating ArrayList for each check.
+     *
+     * @param twoFactorAuthMethodAllowed the method to check (e.g., "app", "email")
+     * @return true if the method is allowed
+     * @throws ServiceException if account attributes cannot be read
+     */
     public boolean isAllowedMethod(String twoFactorAuthMethodAllowed) throws ServiceException {
         String[] allowedMethods = account.getTwoFactorAuthMethodAllowed();
-        if(Arrays.asList(allowedMethods).contains(twoFactorAuthMethodAllowed)){
-            return true;
-        } else {
-            return false;
+        // Direct array iteration is more efficient than Arrays.asList().contains()
+        for (String method : allowedMethods) {
+            if (method.equals(twoFactorAuthMethodAllowed)) {
+                return true;
+            }
         }
+        return false;
     }
 
-    // Count 2FA (app and/or email) enabled methods.
+    /**
+     * Counts the number of enabled 2FA methods for this account.
+     *
+     * @return the count of enabled methods
+     * @throws ServiceException if account attributes cannot be read
+     */
     private int enabledTwoFactorAuthMethodsCount() throws ServiceException {
         String[] enabledMethods = account.getTwoFactorAuthMethodEnabled();
-        return (enabledMethods.length);
+        return enabledMethods.length;
     }
 
     private void delete2FACredentials() throws ServiceException {
