@@ -23,17 +23,14 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.zimbra.common.auth.twofactor.AuthenticatorConfig;
 import com.zimbra.common.auth.twofactor.TwoFactorOptions.CodeLength;
 import com.zimbra.common.auth.twofactor.TwoFactorOptions.HashAlgorithm;
-import com.zimbra.cs.account.ForgetPasswordException;
 import com.zimbra.cs.account.auth.twofactor.AppSpecificPasswords;
 import com.zimbra.cs.account.auth.twofactor.TrustedDevices;
 import com.zimbra.cs.account.auth.twofactor.TwoFactorAuth;
@@ -46,18 +43,23 @@ import com.zimbra.common.service.ServiceException;
 import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.util.ZimbraLog;
 import com.zimbra.cs.account.Account;
-import com.zimbra.cs.account.AccountServiceException;
 import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
 import com.btactic.twofactorauth.app.ZetaAppSpecificPassword;
-import com.btactic.twofactorauth.app.ZetaAppSpecificPasswordData;
 import com.btactic.twofactorauth.app.ZetaAppSpecificPasswords;
+import com.btactic.twofactorauth.core.BaseTwoFactorAuthComponent;
+import com.btactic.twofactorauth.core.EmailCodeParser;
+import com.btactic.twofactorauth.core.TwoFactorAuthConstants;
+import com.btactic.twofactorauth.core.TwoFactorAuthUtils;
 import com.btactic.twofactorauth.credentials.CredentialGenerator;
 import com.btactic.twofactorauth.credentials.TOTPCredentials;
+import com.btactic.twofactorauth.exception.TwoFactorCodeExpiredException;
+import com.btactic.twofactorauth.exception.TwoFactorCodeInvalidException;
+import com.btactic.twofactorauth.exception.TwoFactorCredentialException;
+import com.btactic.twofactorauth.exception.TwoFactorCredentialException.CredentialErrorType;
 import com.btactic.twofactorauth.service.exception.SendTwoFactorAuthCodeException;
 import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDevices;
 import com.btactic.twofactorauth.ZetaScratchCodes;
 import com.zimbra.cs.account.Config;
-import com.zimbra.cs.account.DataSource;
 import com.zimbra.cs.account.Provisioning;
 import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDevice;
 import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDeviceToken;
@@ -73,27 +75,33 @@ import org.apache.commons.lang.RandomStringUtils;
  * @author iraykin
  *
  */
-public class ZetaTwoFactorAuth extends TwoFactorAuth {
-    private Account account;
-    private String acctNamePassedIn;
+public class ZetaTwoFactorAuth extends BaseTwoFactorAuthComponent implements TwoFactorAuth {
     private String secret;
     private List<String> scratchCodes;
-    private Encoding encoding;
-    private Encoding scratchEncoding;
     boolean hasStoredSecret;
     boolean hasStoredScratchCodes;
     private Map<String, ZetaAppSpecificPassword> appPasswords = new HashMap<String, ZetaAppSpecificPassword>();
-    private String emailDataSeparator=":";
+
+    // Cached config for better performance
+    private AuthenticatorConfig authenticatorConfig;
 
     public ZetaTwoFactorAuth(Account account) throws ServiceException {
+        if (account == null) {
+            throw new IllegalArgumentException("Account cannot be null");
+        }
         this(account, account.getName());
     }
 
     public ZetaTwoFactorAuth(Account account, String acctNamePassedIn) throws ServiceException {
+        if (account == null) {
+            throw new IllegalArgumentException("Account cannot be null");
+        }
+        if (Strings.isNullOrEmpty(acctNamePassedIn)) {
+            throw new IllegalArgumentException("Account name cannot be null or empty");
+        }
+
         super(account, acctNamePassedIn);
-        this.account = account;
-        this.acctNamePassedIn = acctNamePassedIn;
-        disableTwoFactorAuthIfNecessary();
+        TwoFactorAuthUtils.disableTwoFactorAuthIfNecessary(account);
         if (account.isFeatureTwoFactorAuthAvailable()) {
             secret = loadSharedSecret();
         }
@@ -143,33 +151,6 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
 
     }
 
-    public void disableTwoFactorAuthIfNecessary() throws ServiceException {
-        String encryptedSecret = account.getTwoFactorAuthSecret();
-        if (!Strings.isNullOrEmpty(encryptedSecret)) {
-            String decrypted = decrypt(account, encryptedSecret);
-            String[] parts = decrypted.split("\\|");
-            Date timestamp;
-            if (parts.length == 1) {
-                // For backwards compatability with the server version
-                // that did not store a timestamp.
-                timestamp = null;
-            } else if (parts.length > 2) {
-                throw ServiceException.FAILURE("invalid shared secret format", null);
-            }
-            try {
-                timestamp = LdapDateUtil.parseGeneralizedTime(parts[1]);
-            } catch (NumberFormatException e) {
-                throw ServiceException.FAILURE("invalid shared secret timestamp", null);
-            }
-            Date lastDisabledDate = account.getCOS().getTwoFactorAuthLastReset();
-            if (lastDisabledDate == null) {
-                return;
-            }
-            if (timestamp == null || lastDisabledDate.after(timestamp)) {
-                clearData();
-            }
-        }
-    }
 
     public void clear2FAData() throws ServiceException {
         account.setTwoFactorAuthEnabled(false);
@@ -187,7 +168,15 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         trustedDevicesManager.clearData();
     }
 
-    /* Determine if a second factor is necessary for authenticating this account */
+    /**
+     * Determines if two-factor authentication is required for this account.
+     * 2FA is required if the feature is available AND either:
+     * - The user has explicitly enabled it, OR
+     * - The admin has made it mandatory for the account
+     *
+     * @return true if 2FA is required for authentication
+     * @throws ServiceException if account attributes cannot be read
+     */
     public boolean twoFactorAuthRequired() throws ServiceException {
         if (!account.isFeatureTwoFactorAuthAvailable()) {
             return false;
@@ -198,7 +187,13 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         }
     }
 
-    /* Determine if two-factor authentication is properly set up */
+    /**
+     * Determines if two-factor authentication is properly configured and set up.
+     * This checks both that 2FA is required AND that credentials have been generated.
+     *
+     * @return true if 2FA is enabled and configured with valid credentials
+     * @throws ServiceException if account attributes cannot be read
+     */
     public boolean twoFactorAuthEnabled() throws ServiceException {
         if (twoFactorAuthRequired()) {
             String secret = account.getTwoFactorAuthSecret();
@@ -218,29 +213,26 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         hasStoredSecret = encryptedSecret != null;
         if (encryptedSecret != null) {
             String decrypted = decrypt(account, encryptedSecret);
-            String[] parts = decrypted.split("\\|");
-            if (parts.length != 2) {
-                throw ServiceException.FAILURE("invalid shared secret format", null);
+            String[] parts = decrypted.split(TwoFactorAuthConstants.SECRET_SEPARATOR);
+            if (parts.length != TwoFactorAuthConstants.SECRET_PARTS_COUNT) {
+                throw new TwoFactorCredentialException(
+                    TwoFactorAuthConstants.ERROR_INVALID_SECRET_FORMAT,
+                    account.getName(),
+                    acctNamePassedIn,
+                    "shared secret",
+                    CredentialErrorType.INVALID_FORMAT
+                );
             }
-            String secret = parts[0];
-            return secret;
+            return parts[TwoFactorAuthConstants.SECRET_VALUE_INDEX];
         } else {
             return null;
         }
     }
 
-    private static String decrypt(Account account, String encrypted) throws ServiceException {
-        return DataSource.decryptData(account.getId(), encrypted);
-    }
-
     private void storeScratchCodes(List<String> codes) throws ServiceException {
-        String codeString = Joiner.on(",").join(codes);
+        String codeString = Joiner.on(TwoFactorAuthConstants.SCRATCH_CODE_SEPARATOR).join(codes);
         String encrypted = encrypt(codeString);
         account.setTwoFactorAuthScratchCodes(encrypted);
-    }
-
-    private String encrypt(String data) throws ServiceException {
-        return DataSource.encryptData(account.getId(), data);
     }
 
     private void storeScratchCodes() throws ServiceException {
@@ -262,35 +254,6 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         storeScratchCodes(credentials.getScratchCodes());
     }
 
-    private Encoding getSecretEncoding() throws ServiceException {
-        if (encoding == null) {
-            try {
-                String enc = getGlobalConfig().getTwoFactorAuthSecretEncodingAsString();
-                this.encoding = Encoding.valueOf(enc);
-            } catch (IllegalArgumentException e) {
-                ZimbraLog.account.error("no valid shared secret encoding specified, defaulting to BASE32");
-                encoding = Encoding.BASE32;
-            }
-        }
-        return encoding;
-    }
-
-    private Encoding getScratchCodeEncoding() throws ServiceException {
-        if (scratchEncoding == null) {
-            try {
-                String enc = getGlobalConfig().getTwoFactorAuthScratchCodeEncodingAsString();
-                this.scratchEncoding = Encoding.valueOf(enc);
-            } catch (IllegalArgumentException e) {
-                ZimbraLog.account.error("scratch code encoding not specified, defaulting to BASE32");
-                this.scratchEncoding = Encoding.BASE32;
-            }
-        }
-        return scratchEncoding;
-    }
-
-    private Config getGlobalConfig() throws ServiceException {
-        return Provisioning.getInstance().getConfig();
-    }
 
     @Override
     public CredentialConfig getCredentialConfig() throws ServiceException {
@@ -305,54 +268,34 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
 
     @Override
     public AuthenticatorConfig getAuthenticatorConfig() throws ServiceException {
-        AuthenticatorConfig config = new AuthenticatorConfig();
-        String algo = Provisioning.getInstance().getConfig().getTwoFactorAuthHashAlgorithmAsString();
-        HashAlgorithm algorithm = HashAlgorithm.valueOf(algo);
-        config.setHashAlgorithm(algorithm);
-        int codeLength = getGlobalConfig().getTwoFactorCodeLength();
-        CodeLength numDigits = CodeLength.valueOf(codeLength);
-        config.setNumCodeDigits(numDigits);
-        config.setWindowSize(getGlobalConfig().getTwoFactorTimeWindowLength() / 1000);
-        config.allowedWindowOffset(getGlobalConfig().getTwoFactorTimeWindowOffset());
-        return config;
+        // Cache the config for better performance
+        if (authenticatorConfig == null) {
+            authenticatorConfig = new AuthenticatorConfig();
+            String algo = getGlobalConfig().getTwoFactorAuthHashAlgorithmAsString();
+            HashAlgorithm algorithm = HashAlgorithm.valueOf(algo);
+            authenticatorConfig.setHashAlgorithm(algorithm);
+            int codeLength = getGlobalConfig().getTwoFactorCodeLength();
+            CodeLength numDigits = CodeLength.valueOf(codeLength);
+            authenticatorConfig.setNumCodeDigits(numDigits);
+            authenticatorConfig.setWindowSize(getGlobalConfig().getTwoFactorTimeWindowLength() / 1000);
+            authenticatorConfig.allowedWindowOffset(getGlobalConfig().getTwoFactorTimeWindowOffset());
+        }
+        return authenticatorConfig;
     }
 
+    /**
+     * Checks if the provided email code is valid.
+     * Uses EmailCodeParser to validate the code and check expiration.
+     *
+     * @param code the email code provided by the user
+     * @return true if the code is valid and not expired
+     * @throws ServiceException if validation fails or code has expired
+     */
     private boolean checkEmailCode(String code) throws ServiceException {
-        String encryptedEmailData = account.getTwoFactorCodeForEmail();
-        if (encryptedEmailData == null || encryptedEmailData.isEmpty()) {
-            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "Email based 2FA code not found on server.");
-        }
-        String decryptedEmailData = decrypt(account, encryptedEmailData);
-
-        String[] parts = decryptedEmailData.split(emailDataSeparator);
-        if (parts.length != 3) {
-            throw ServiceException.FAILURE("invalid email code format", null);
-        }
-        String emailCode = parts[0];
-        String unKnownData2 = parts[1];
-        String timestamp = parts[2];
-        // Decryption example:
-        // decryptedEmailData: '6912720::1738424806645'
-        // emailCode :    '6912720'
-        // unKnownData2 : ''
-        // timestamp:     '1738424806645'
-
-        long emailTimeStamp;
-        try {
-          emailTimeStamp = Long.parseLong(timestamp);
-        } catch (NumberFormatException e) {
-            throw ServiceException.FAILURE("invalid email code timestamp format", null);
-        }
-
         long emailLifeTime = account.getTwoFactorCodeLifetimeForEmail();
-        long emailExpiryTime = emailTimeStamp + emailLifeTime;
-        boolean emailCodeIsExpired = System.currentTimeMillis() > emailExpiryTime;
-
-        if (emailCodeIsExpired) {
-            throw SendTwoFactorAuthCodeException.CODE_EXPIRED("The email 2FA code is expired.");
-        }
-
-        return (emailCode.equals(code));
+        // EmailCodeParser.validateAndParse throws exception if invalid or expired
+        EmailCodeParser.validateAndParse(account, acctNamePassedIn, code, emailLifeTime);
+        return true;
     }
 
     private boolean checkTOTPCode(String code) throws ServiceException {
@@ -380,34 +323,55 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
     @Override
     public void authenticateTOTP(String code) throws ServiceException {
         if (!checkTOTPCode(code)) {
-            ZimbraLog.account.error("invalid TOTP code");
-            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "invalid TOTP code");
+            ZimbraLog.account.error("invalid TOTP code for account: " + account.getName());
+            throw new TwoFactorCodeInvalidException(
+                account.getName(),
+                acctNamePassedIn,
+                "TOTP",
+                "code does not match expected value"
+            );
         }
     }
 
     @Override
     public void authenticate(String code) throws ServiceException {
         if (code == null) {
-            ZimbraLog.account.error("two-factor code missing");
-            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "two-factor code missing");
+            ZimbraLog.account.error("2FA authentication failed for account " + account.getName() + ": code missing");
+            throw new TwoFactorCodeInvalidException(
+                account.getName(),
+                acctNamePassedIn,
+                "unknown",
+                "code is null or missing"
+            );
         }
 
         boolean success = false;
+        String codeType = "unknown";
 
         if (isTOTPCode(code)) {
+          codeType = "TOTP";
           success = checkTOTPCode(code);
         } else if (isEmailCode(code)) {
+          codeType = "Email";
           success = checkEmailCode(code);
         } else if (isScratchCode(code)) {
+          codeType = "Scratch";
           ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
           success = scratchCodesManager.checkScratchCodes(code);
         }
 
         if (!success) {
             failedLogin();
-            ZimbraLog.account.error("invalid two-factor code");
-            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "invalid two-factor code");
+            ZimbraLog.account.error("2FA authentication failed for account " + account.getName() + ": invalid " + codeType + " code");
+            throw new TwoFactorCodeInvalidException(
+                account.getName(),
+                acctNamePassedIn,
+                codeType,
+                "code does not match expected value"
+            );
         }
+
+        ZimbraLog.account.info("2FA authentication successful for account " + account.getName() + " using " + codeType + " code");
     }
 
     @Override
@@ -424,6 +388,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
 
     @Override
     public void enableTwoFactorAuth() throws ServiceException {
+        ZimbraLog.account.info("Enabling 2FA for account: " + account.getName());
         account.setTwoFactorAuthEnabled(true);
     }
 
@@ -432,47 +397,76 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         account.addTwoFactorAuthMethodEnabled(twoFactorAuthMethodEnabled);
     }
 
-    // Is either 2FA method (app and/or email) enabled by the user?
+    /**
+     * Internal method to check if a 2FA method is enabled.
+     * Optimized to avoid creating ArrayList for each check.
+     *
+     * @param twoFactorAuthMethodEnabled the method to check
+     * @return true if the method is enabled
+     * @throws ServiceException if account attributes cannot be read
+     */
     private boolean internalIsEnabledMethod(String twoFactorAuthMethodEnabled) throws ServiceException {
         String[] enabledMethods = account.getTwoFactorAuthMethodEnabled();
-        if(Arrays.asList(enabledMethods).contains(twoFactorAuthMethodEnabled)){
-            return true;
-        } else {
-            return false;
+        // Direct array iteration is more efficient than Arrays.asList().contains()
+        for (String method : enabledMethods) {
+            if (method.equals(twoFactorAuthMethodEnabled)) {
+                return true;
+            }
         }
+        return false;
     }
 
-    // Is either 2FA method (app and/or email) enabled by the user?
+    /**
+     * Checks if a specific 2FA method is enabled by the user.
+     * Includes legacy fallback for app-based 2FA.
+     *
+     * @param twoFactorAuthMethodEnabled the method to check (e.g., "app", "email")
+     * @return true if the method is enabled
+     * @throws ServiceException if account attributes cannot be read
+     */
     public boolean isEnabledMethod(String twoFactorAuthMethodEnabled) throws ServiceException {
         if (twoFactorAuthMethodEnabled == AccountConstants.E_TWO_FACTOR_METHOD_APP) {
             if (internalIsEnabledMethod(twoFactorAuthMethodEnabled)) {
                 return true;
             } else {
-                // Legacy fallback
-                // Detect when app TwoFactorAuth was enabled
-                // but there was not an specific app saved
-                boolean noEnabledMethods = (this.enabledTwoFactorAuthMethodsCount() == 0) ;
-                return (noEnabledMethods && account.isTwoFactorAuthEnabled());
+                // Legacy fallback: detect when app TwoFactorAuth was enabled
+                // but there was not a specific app method saved
+                int methodCount = enabledTwoFactorAuthMethodsCount();
+                return (methodCount == 0 && account.isTwoFactorAuthEnabled());
             }
         } else {
             return internalIsEnabledMethod(twoFactorAuthMethodEnabled);
         }
     }
 
-    // Is either 2FA method (app and/or email) allowed to an user to use?
+    /**
+     * Checks if a specific 2FA method is allowed for the user.
+     * Optimized to avoid creating ArrayList for each check.
+     *
+     * @param twoFactorAuthMethodAllowed the method to check (e.g., "app", "email")
+     * @return true if the method is allowed
+     * @throws ServiceException if account attributes cannot be read
+     */
     public boolean isAllowedMethod(String twoFactorAuthMethodAllowed) throws ServiceException {
         String[] allowedMethods = account.getTwoFactorAuthMethodAllowed();
-        if(Arrays.asList(allowedMethods).contains(twoFactorAuthMethodAllowed)){
-            return true;
-        } else {
-            return false;
+        // Direct array iteration is more efficient than Arrays.asList().contains()
+        for (String method : allowedMethods) {
+            if (method.equals(twoFactorAuthMethodAllowed)) {
+                return true;
+            }
         }
+        return false;
     }
 
-    // Count 2FA (app and/or email) enabled methods.
+    /**
+     * Counts the number of enabled 2FA methods for this account.
+     *
+     * @return the count of enabled methods
+     * @throws ServiceException if account attributes cannot be read
+     */
     private int enabledTwoFactorAuthMethodsCount() throws ServiceException {
         String[] enabledMethods = account.getTwoFactorAuthMethodEnabled();
-        return (enabledMethods.length);
+        return enabledMethods.length;
     }
 
     private void delete2FACredentials() throws ServiceException {
@@ -532,6 +526,7 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
     }
 
     public void disableTwoFactorAuthApp(boolean deleteCredentials) throws ServiceException {
+        ZimbraLog.account.info("Disabling app-based 2FA for account: " + account.getName());
         checkDisableTwoFactorAuth();
 
         if (account.isTwoFactorAuthEnabled()) {
@@ -541,12 +536,14 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
             smartPurgeTwoFactorAuthData();
 
             smartSetPrefPrimaryTwoFactorAuthMethod();
+            ZimbraLog.account.info("Successfully disabled app-based 2FA for account: " + account.getName());
         } else {
-            ZimbraLog.account.info("two-factor authentication already disabled");
+            ZimbraLog.account.info("two-factor authentication already disabled for account: " + account.getName());
         }
     }
 
     public void disableTwoFactorAuthEmail() throws ServiceException {
+        ZimbraLog.account.info("Disabling email-based 2FA for account: " + account.getName());
         checkDisableTwoFactorAuth();
 
         if (account.isTwoFactorAuthEnabled()) {
@@ -558,8 +555,9 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
             smartPurgeTwoFactorAuthData();
 
             smartSetPrefPrimaryTwoFactorAuthMethod();
+            ZimbraLog.account.info("Successfully disabled email-based 2FA for account: " + account.getName());
         } else {
-            ZimbraLog.account.info("two-factor authentication already disabled");
+            ZimbraLog.account.info("two-factor authentication already disabled for account: " + account.getName());
         }
     }
 
@@ -612,75 +610,26 @@ public class ZetaTwoFactorAuth extends TwoFactorAuth {
         int emailCodeLength = getGlobalConfig().getTwoFactorAuthEmailCodeLength();
         String emailCode = RandomStringUtils.randomNumeric(emailCodeLength);
 
-        String unKnownData2 = "";
-        long timestampLong = System.currentTimeMillis();
-        String timestamp = Long.toString(timestampLong);
-        // Decryption example:
-        // decryptedEmailData: '6912720::1738424806645'
-        // emailCode :    '6912720'
-        // unKnownData2 : ''
-        // timestamp:     '1738424806645'
+        String reserved = ""; // Reserved for future use
+        long timestamp = System.currentTimeMillis();
 
-        String emailData = emailCode + emailDataSeparator + unKnownData2 + emailDataSeparator + timestamp;
+        String emailData = emailCode +
+            TwoFactorAuthConstants.EMAIL_DATA_SEPARATOR + reserved +
+            TwoFactorAuthConstants.EMAIL_DATA_SEPARATOR + timestamp;
 
         String encryptedEmailData = encrypt(emailData);
         account.setTwoFactorCodeForEmail(encryptedEmailData);
     }
 
     public String getEmailCode() throws ServiceException {
-        String encryptedEmailData = account.getTwoFactorCodeForEmail();
-        if (encryptedEmailData == null || encryptedEmailData.isEmpty()) {
-            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "Email based 2FA code not found on server.");
-        }
-        String decryptedEmailData = decrypt(account, encryptedEmailData);
-
-        String[] parts = decryptedEmailData.split(emailDataSeparator);
-        if (parts.length != 3) {
-            throw ServiceException.FAILURE("invalid email code format", null);
-        }
-        String emailCode = parts[0];
-        String unKnownData2 = parts[1];
-        String timestamp = parts[2];
-        // Decryption example:
-        // decryptedEmailData: '6912720::1738424806645'
-        // emailCode :    '6912720'
-        // unKnownData2 : ''
-        // timestamp:     '1738424806645'
-
-        return emailCode;
+        EmailCodeData emailData = parseEmailCodeData();
+        return emailData.getCode();
     }
 
     public long getEmailExpiryTime() throws ServiceException {
-        String encryptedEmailData = account.getTwoFactorCodeForEmail();
-        if (encryptedEmailData == null || encryptedEmailData.isEmpty()) {
-            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "Email based 2FA code not found on server.");
-        }
-        String decryptedEmailData = decrypt(account, encryptedEmailData);
-
-        String[] parts = decryptedEmailData.split(emailDataSeparator);
-        if (parts.length != 3) {
-            throw ServiceException.FAILURE("invalid email code format", null);
-        }
-        String emailCode = parts[0];
-        String unKnownData2 = parts[1];
-        String timestamp = parts[2];
-        // Decryption example:
-        // decryptedEmailData: '6912720::1738424806645'
-        // emailCode :    '6912720'
-        // unKnownData2 : ''
-        // timestamp:     '1738424806645'
-
-        long emailTimeStamp;
-        try {
-          emailTimeStamp = Long.parseLong(timestamp);
-        } catch (NumberFormatException e) {
-            throw ServiceException.FAILURE("invalid email code timestamp format", null);
-        }
-
+        EmailCodeData emailData = parseEmailCodeData();
         long emailLifeTime = account.getTwoFactorCodeLifetimeForEmail();
-        long emailExpiryTime = emailTimeStamp + emailLifeTime;
-
-        return emailExpiryTime;
+        return emailData.getTimestamp() + emailLifeTime;
     }
 
     public static class TwoFactorPasswordChange extends ChangePasswordListener {

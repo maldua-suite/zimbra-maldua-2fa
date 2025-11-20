@@ -20,72 +20,42 @@
 package com.btactic.twofactorauth;
 
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.zimbra.common.auth.twofactor.AuthenticatorConfig;
-import com.zimbra.common.auth.twofactor.TwoFactorOptions.CodeLength;
-import com.zimbra.common.auth.twofactor.TwoFactorOptions.HashAlgorithm;
-import com.zimbra.cs.account.auth.twofactor.AppSpecificPasswords;
-import com.zimbra.cs.account.auth.twofactor.TrustedDevices;
-import com.zimbra.cs.account.auth.twofactor.TwoFactorAuth;
 import com.zimbra.cs.account.auth.twofactor.TwoFactorAuth.CredentialConfig;
-import com.zimbra.cs.account.auth.twofactor.TwoFactorAuth.Factory;
 import com.zimbra.cs.account.auth.twofactor.ScratchCodes;
-import com.zimbra.common.auth.twofactor.TwoFactorOptions.Encoding;
-import com.zimbra.common.auth.twofactor.TOTPAuthenticator;
 import com.zimbra.common.service.ServiceException;
 import com.zimbra.common.util.ZimbraLog;
 import com.zimbra.cs.account.Account;
-import com.zimbra.cs.account.AccountServiceException;
 import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
-import com.btactic.twofactorauth.ZetaTwoFactorAuth;
-import com.btactic.twofactorauth.app.ZetaAppSpecificPassword;
-import com.btactic.twofactorauth.app.ZetaAppSpecificPasswordData;
-import com.btactic.twofactorauth.app.ZetaAppSpecificPasswords;
-import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDevices;
-import com.zimbra.cs.account.Config;
-import com.zimbra.cs.account.DataSource;
-import com.zimbra.cs.account.Provisioning;
-import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDevice;
-import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDeviceToken;
-import com.zimbra.cs.account.ldap.ChangePasswordListener;
-import com.zimbra.cs.account.ldap.LdapLockoutPolicy;
-import com.zimbra.cs.ldap.LdapDateUtil;
+import com.btactic.twofactorauth.core.BaseTwoFactorAuthComponent;
+import com.btactic.twofactorauth.core.TwoFactorAuthConstants;
+import com.btactic.twofactorauth.core.TwoFactorAuthUtils;
 import com.btactic.twofactorauth.credentials.CredentialGenerator;
+import com.btactic.twofactorauth.exception.TwoFactorCodeInvalidException;
+import com.zimbra.cs.account.ldap.LdapLockoutPolicy;
+import com.zimbra.cs.account.Provisioning;
 
 /**
- * This class is the main entry point for two-factor authentication.
+ * Manages scratch codes for two-factor authentication.
+ * Scratch codes are one-time use backup codes for account recovery.
  *
  * @author iraykin
  *
  */
-public class ZetaScratchCodes implements ScratchCodes {
-    private Account account;
-    private String acctNamePassedIn;
-    private String secret;
+public class ZetaScratchCodes extends BaseTwoFactorAuthComponent implements ScratchCodes {
     private List<String> scratchCodes;
-    private Encoding encoding;
-    private Encoding scratchEncoding;
-    boolean hasStoredSecret;
     boolean hasStoredScratchCodes;
-    private Map<String, ZetaAppSpecificPassword> appPasswords = new HashMap<String, ZetaAppSpecificPassword>();
 
     public ZetaScratchCodes(Account account) throws ServiceException {
         this(account, account.getName());
     }
 
     public ZetaScratchCodes(Account account, String acctNamePassedIn) throws ServiceException {
-        this.account = account;
-        this.acctNamePassedIn = acctNamePassedIn;
-        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account, acctNamePassedIn);
-        manager.disableTwoFactorAuthIfNecessary();
+        super(account, acctNamePassedIn);
+        TwoFactorAuthUtils.disableTwoFactorAuthIfNecessary(account);
         if (account.isFeatureTwoFactorAuthAvailable()) {
             scratchCodes = loadScratchCodes();
         }
@@ -105,91 +75,29 @@ public class ZetaScratchCodes implements ScratchCodes {
         return config;
     }
 
-    public AuthenticatorConfig getAuthenticatorConfig() throws ServiceException {
-        AuthenticatorConfig config = new AuthenticatorConfig();
-        String algo = Provisioning.getInstance().getConfig().getTwoFactorAuthHashAlgorithmAsString();
-        HashAlgorithm algorithm = HashAlgorithm.valueOf(algo);
-        config.setHashAlgorithm(algorithm);
-        int codeLength = getGlobalConfig().getTwoFactorCodeLength();
-        CodeLength numDigits = CodeLength.valueOf(codeLength);
-        config.setNumCodeDigits(numDigits);
-        config.setWindowSize(getGlobalConfig().getTwoFactorTimeWindowLength() / 1000);
-        config.allowedWindowOffset(getGlobalConfig().getTwoFactorTimeWindowOffset());
-        return config;
-    }
-
-    /* Determine if a second factor is necessary for authenticating this account */
-    public boolean twoFactorAuthRequired() throws ServiceException {
-        if (!account.isFeatureTwoFactorAuthAvailable()) {
-            return false;
-        } else {
-            boolean isRequired = account.isFeatureTwoFactorAuthRequired();
-            boolean isUserEnabled = account.isTwoFactorAuthEnabled();
-            return isUserEnabled || isRequired;
-        }
-    }
-
-    /* Determine if two-factor authentication is properly set up */
-    public boolean twoFactorAuthEnabled() throws ServiceException {
-        if (twoFactorAuthRequired()) {
-            String secret = account.getTwoFactorAuthSecret();
-            return !Strings.isNullOrEmpty(secret);
-        } else {
-            return false;
-        }
-    }
-
-    private void storeSharedSecret(String secret) throws ServiceException {
-        String encrypted = encrypt(secret);
-        account.setTwoFactorAuthSecret(encrypted);
-    }
-
-    private String loadSharedSecret() throws ServiceException {
-        String encryptedSecret = account.getTwoFactorAuthSecret();
-        hasStoredSecret = encryptedSecret != null;
-        if (encryptedSecret != null) {
-            String decrypted = decrypt(account, encryptedSecret);
-            String[] parts = decrypted.split("\\|");
-            if (parts.length != 2) {
-                throw ServiceException.FAILURE("invalid shared secret format", null);
-            }
-            String secret = parts[0];
-            return secret;
-        } else {
-            return null;
-        }
-    }
-
-    private static String decrypt(Account account, String encrypted) throws ServiceException {
-        return DataSource.decryptData(account.getId(), encrypted);
-    }
-
     private List<String> loadScratchCodes() throws ServiceException {
         String encryptedCodes = account.getTwoFactorAuthScratchCodes();
         if (Strings.isNullOrEmpty(encryptedCodes)) {
             hasStoredScratchCodes = false;
             return new ArrayList<String>();
-        } else {
-            hasStoredScratchCodes = true;
         }
+
+        hasStoredScratchCodes = true;
         String commaSeparatedCodes = decrypt(account, encryptedCodes);
-        String[] codes = commaSeparatedCodes.split(",");
-        List<String> codeList = new ArrayList<String>();
-        for (int i = 0; i < codes.length; i++) {
-            codeList.add(codes[i]);
+        String[] codes = commaSeparatedCodes.split(TwoFactorAuthConstants.SCRATCH_CODE_SEPARATOR);
+
+        List<String> codeList = new ArrayList<String>(codes.length);
+        for (String code : codes) {
+            codeList.add(code);
         }
         return codeList;
     }
 
     @Override
     public void storeCodes(List<String> codes) throws ServiceException {
-        String codeString = Joiner.on(",").join(codes);
+        String codeString = Joiner.on(TwoFactorAuthConstants.SCRATCH_CODE_SEPARATOR).join(codes);
         String encrypted = encrypt(codeString);
         account.setTwoFactorAuthScratchCodes(encrypted);
-    }
-
-    private String encrypt(String data) throws ServiceException {
-        return DataSource.encryptData(account.getId(), data);
     }
 
     private void storeCodes() throws ServiceException {
@@ -209,55 +117,37 @@ public class ZetaScratchCodes implements ScratchCodes {
 
     }
 
-    private Encoding getSecretEncoding() throws ServiceException {
-        if (encoding == null) {
-            try {
-                String enc = getGlobalConfig().getTwoFactorAuthSecretEncodingAsString();
-                this.encoding = Encoding.valueOf(enc);
-            } catch (IllegalArgumentException e) {
-                ZimbraLog.account.error("no valid shared secret encoding specified, defaulting to BASE32");
-                encoding = Encoding.BASE32;
-            }
-        }
-        return encoding;
-    }
-
-    private Encoding getScratchCodeEncoding() throws ServiceException {
-        if (scratchEncoding == null) {
-            try {
-                String enc = getGlobalConfig().getTwoFactorAuthScratchCodeEncodingAsString();
-                this.scratchEncoding = Encoding.valueOf(enc);
-            } catch (IllegalArgumentException e) {
-                ZimbraLog.account.error("scratch code encoding not specified, defaulting to BASE32");
-                this.scratchEncoding = Encoding.BASE32;
-            }
-        }
-        return scratchEncoding;
-    }
-
-    private Config getGlobalConfig() throws ServiceException {
-        return Provisioning.getInstance().getConfig();
-    }
-
-    private boolean checkTOTPCode(String code) throws ServiceException {
-        long curTime = System.currentTimeMillis() / 1000;
-        AuthenticatorConfig config = getAuthenticatorConfig();
-        TOTPAuthenticator auth = new TOTPAuthenticator(config);
-        return auth.validateCode(secret, curTime, code, getSecretEncoding());
-    }
 
     public void authenticate(String scratchCode) throws ServiceException {
         if (!checkScratchCodes(scratchCode)) {
             failedLogin();
-            ZimbraLog.account.error("invalid scratch code");
-            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "invalid scratch code");
+            ZimbraLog.account.error("invalid scratch code for account: " + account.getName());
+            throw new TwoFactorCodeInvalidException(
+                account.getName(),
+                acctNamePassedIn,
+                "Scratch",
+                "code not found in valid scratch codes list"
+            );
         }
     }
 
+    /**
+     * Checks if the provided scratch code is valid and invalidates it if found.
+     * Uses Iterator for efficient removal to avoid ConcurrentModificationException
+     * and improve performance.
+     *
+     * @param scratchCode the scratch code to validate
+     * @return true if the code was valid and has been invalidated
+     * @throws ServiceException if storage operation fails
+     */
     public boolean checkScratchCodes(String scratchCode) throws ServiceException {
-        for (String code: scratchCodes) {
+        java.util.Iterator<String> iterator = scratchCodes.iterator();
+        while (iterator.hasNext()) {
+            String code = iterator.next();
             if (code.equals(scratchCode)) {
-                invalidateScratchCode(code);
+                iterator.remove(); // O(1) removal using iterator
+                storeCodes(); // Persist the change
+                ZimbraLog.account.info("Scratch code validated and invalidated for account: " + account.getName());
                 return true;
             }
         }
@@ -281,7 +171,7 @@ public class ZetaScratchCodes implements ScratchCodes {
     }
 
     private void storeScratchCodes(List<String> codes) throws ServiceException {
-        String codeString = Joiner.on(",").join(codes);
+        String codeString = Joiner.on(TwoFactorAuthConstants.SCRATCH_CODE_SEPARATOR).join(codes);
         String encrypted = encrypt(codeString);
         account.setTwoFactorAuthScratchCodes(encrypted);
     }
@@ -290,11 +180,6 @@ public class ZetaScratchCodes implements ScratchCodes {
         if (scratchCodes != null) {
             storeScratchCodes(scratchCodes);
         }
-    }
-
-    private void invalidateScratchCode(String code) throws ServiceException {
-        scratchCodes.remove(code);
-        storeCodes();
     }
 
     public void deleteCredentials() throws ServiceException {

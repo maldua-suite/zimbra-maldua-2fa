@@ -19,58 +19,31 @@
  */
 package com.btactic.twofactorauth.app;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.zimbra.common.auth.twofactor.AuthenticatorConfig;
-import com.zimbra.common.auth.twofactor.TwoFactorOptions.CodeLength;
-import com.zimbra.common.auth.twofactor.TwoFactorOptions.HashAlgorithm;
 import com.zimbra.cs.account.auth.twofactor.AppSpecificPasswords;
 import com.zimbra.cs.account.auth.twofactor.AppSpecificPasswordData;
-import com.zimbra.cs.account.auth.twofactor.TwoFactorAuth.CredentialConfig;
-import com.zimbra.common.auth.twofactor.TwoFactorOptions.Encoding;
-import com.zimbra.common.auth.twofactor.TOTPAuthenticator;
 import com.zimbra.common.service.ServiceException;
 import com.zimbra.common.util.ZimbraLog;
 import com.zimbra.cs.account.Account;
-import com.zimbra.cs.account.AccountServiceException;
 import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
-import com.btactic.twofactorauth.ZetaTwoFactorAuth;
-import com.btactic.twofactorauth.app.ZetaAppSpecificPassword;
-import com.btactic.twofactorauth.app.ZetaAppSpecificPasswordData;
+import com.btactic.twofactorauth.core.BaseTwoFactorAuthComponent;
+import com.btactic.twofactorauth.core.TwoFactorAuthUtils;
+import com.btactic.twofactorauth.exception.TwoFactorCodeInvalidException;
 import com.zimbra.cs.account.AppSpecificPassword;
-import com.zimbra.cs.account.Config;
-import com.zimbra.cs.account.DataSource;
-import com.zimbra.cs.account.Provisioning;
-import com.zimbra.cs.account.TrustedDevice;
-import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDevice;
-import com.btactic.twofactorauth.trusteddevices.ZetaTrustedDeviceToken;
-import com.zimbra.cs.account.ldap.ChangePasswordListener;
-import com.zimbra.cs.account.ldap.LdapLockoutPolicy;
-import com.zimbra.cs.ldap.LdapDateUtil;
 
 /**
- * This class is the main entry point for two-factor authentication.
+ * Manages application-specific passwords for two-factor authentication.
+ * App-specific passwords allow applications that don't support 2FA
+ * to authenticate with the account.
  *
  * @author iraykin
  *
  */
-public class ZetaAppSpecificPasswords implements AppSpecificPasswords {
-    private Account account;
-    private String acctNamePassedIn;
-    private String secret;
-    private List<String> scratchCodes;
-    private Encoding encoding;
-    private Encoding scratchEncoding;
-    boolean hasStoredSecret;
-    boolean hasStoredScratchCodes;
+public class ZetaAppSpecificPasswords extends BaseTwoFactorAuthComponent implements AppSpecificPasswords {
     private Map<String, ZetaAppSpecificPassword> appPasswords = new HashMap<String, ZetaAppSpecificPassword>();
 
     public ZetaAppSpecificPasswords(Account account) throws ServiceException {
@@ -78,10 +51,8 @@ public class ZetaAppSpecificPasswords implements AppSpecificPasswords {
     }
 
     public ZetaAppSpecificPasswords(Account account, String acctNamePassedIn) throws ServiceException {
-        this.account = account;
-        this.acctNamePassedIn = acctNamePassedIn;
-        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account, acctNamePassedIn);
-        manager.disableTwoFactorAuthIfNecessary();
+        super(account, acctNamePassedIn);
+        TwoFactorAuthUtils.disableTwoFactorAuthIfNecessary(account);
         if (account.isFeatureTwoFactorAuthAvailable()) {
             appPasswords = loadAppPasswords();
         }
@@ -89,17 +60,6 @@ public class ZetaAppSpecificPasswords implements AppSpecificPasswords {
 
     public void clearData() throws ServiceException {
         revokeAll();
-    }
-
-    /* Determine if a second factor is necessary for authenticating this account */
-    public boolean twoFactorAuthRequired() throws ServiceException {
-        if (!account.isFeatureTwoFactorAuthAvailable()) {
-            return false;
-        } else {
-            boolean isRequired = account.isFeatureTwoFactorAuthRequired();
-            boolean isUserEnabled = account.isTwoFactorAuthEnabled();
-            return isUserEnabled || isRequired;
-        }
     }
 
     @Override
@@ -111,32 +71,40 @@ public class ZetaAppSpecificPasswords implements AppSpecificPasswords {
         }
     }
 
-    private static String decrypt(Account account, String encrypted) throws ServiceException {
-        return DataSource.decryptData(account.getId(), encrypted);
-    }
-
     @Override
     public void authenticate(String providedPassword) throws ServiceException {
         for (AppSpecificPassword appPassword: appPasswords.values())    {
             if (appPassword.validate(providedPassword)) {
-                ZimbraLog.account.debug("logged in with app-specific password");
+                ZimbraLog.account.debug("logged in with app-specific password for account: " + account.getName());
                 appPassword.update();
                 return;
             }
         }
-        throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "invalid app-specific password");
+        ZimbraLog.account.error("invalid app-specific password for account: " + account.getName());
+        throw new TwoFactorCodeInvalidException(
+            account.getName(),
+            acctNamePassedIn,
+            "App-Specific Password",
+            "password does not match any registered app-specific password"
+        );
     }
 
     @Override
     public String getAppNameByPassword(String password) throws ServiceException {
         for (ZetaAppSpecificPassword appPassword: appPasswords.values())    {
             if (appPassword.validate(password)) {
-                ZimbraLog.account.debug("getAppNameByPassword with app-specific password");
+                ZimbraLog.account.debug("getAppNameByPassword with app-specific password for account: " + account.getName());
                 appPassword.update();
                 return (appPassword.getName());
             }
         }
-        throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "invalid app-specific password");
+        ZimbraLog.account.error("invalid app-specific password in getAppNameByPassword for account: " + account.getName());
+        throw new TwoFactorCodeInvalidException(
+            account.getName(),
+            acctNamePassedIn,
+            "App-Specific Password",
+            "password does not match any registered app-specific password"
+        );
     }
 
     @Override

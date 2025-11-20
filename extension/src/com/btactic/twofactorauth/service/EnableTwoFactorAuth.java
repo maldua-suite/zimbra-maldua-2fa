@@ -40,6 +40,8 @@ import com.zimbra.cs.account.auth.AuthContext.Protocol;
 import com.btactic.twofactorauth.credentials.TOTPCredentials;
 import com.btactic.twofactorauth.ZetaTwoFactorAuth;
 import com.btactic.twofactorauth.ZetaScratchCodes;
+import com.btactic.twofactorauth.exception.TwoFactorAuthRequiredException;
+import com.btactic.twofactorauth.exception.TwoFactorSetupException;
 import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.cs.service.mail.SetRecoveryAccount;
 import com.zimbra.soap.account.message.EnableTwoFactorAuthResponse;
@@ -71,7 +73,7 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
             return handleEmailEnable(request, context);
         }
 
-        throw AuthFailedServiceException.AUTH_FAILED("Unsupported 2FA method");
+        throw new TwoFactorSetupException("Unsupported 2FA method: " + method, "method validation");
     }
 
     private Element handleEmailEnable(Element request, Map<String, Object> context)
@@ -84,12 +86,22 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
             throw AuthFailedServiceException.AUTH_FAILED("no such account");
         }
         if (!account.isFeatureTwoFactorAuthAvailable()) {
-            throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
+            throw new TwoFactorAuthRequiredException(
+                acctNamePassedIn,
+                acctNamePassedIn,
+                AccountConstants.E_TWO_FACTOR_METHOD_EMAIL,
+                false
+            );
         }
         ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account, acctNamePassedIn);
 
         if (!manager.isAllowedMethod(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL)) {
-            throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
+            throw new TwoFactorSetupException(
+                "Email-based 2FA method is not allowed for this account",
+                acctNamePassedIn,
+                acctNamePassedIn,
+                "method authorization check"
+            );
         }
 
         Element passwordEl = request.getOptionalElement(AccountConstants.E_PASSWORD);
@@ -139,6 +151,13 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
         return zsc.jaxbToElement(response);
     }
 
+    /**
+     * Resets the recovery code for the account.
+     * Delegates to SetRecoveryAccount handler with reset operation.
+     *
+     * @param context the SOAP context containing authentication and session info
+     * @throws ServiceException if reset operation fails
+     */
     private void resetCode(Map<String, Object> context) throws ServiceException {
         SetRecoveryAccountRequest resetRecoveryAccountRequest = new SetRecoveryAccountRequest();
         resetRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.reset);
@@ -147,13 +166,22 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
         resetReq.addAttribute("isFromEnableTwoFactorAuth", true);
 
         try {
-            // TODO: Check if reusing context here is a good idea or if we should create a new one
+            // Context reuse is safe here - it preserves authentication state and session info
+            // which is necessary for the delegated handler to access the authenticated account
             new SetRecoveryAccount().handle(resetReq, context);
         } catch (ServiceException e) {
             throw ServiceException.FAILURE("Cannot reset the code", e);
         }
     }
 
+    /**
+     * Sends a verification code to the specified email address.
+     * Delegates to SetRecoveryAccount handler with sendCode operation.
+     *
+     * @param email the email address to send the code to
+     * @param context the SOAP context containing authentication and session info
+     * @throws ServiceException if send operation fails
+     */
     private void sendCode(String email, Map<String, Object> context) throws ServiceException {
         SetRecoveryAccountRequest setRecoveryAccountRequest = new SetRecoveryAccountRequest();
         setRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.sendCode);
@@ -163,13 +191,22 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
         setReq.addAttribute("isFromEnableTwoFactorAuth", true);
 
         try {
-            // TODO: Check if reusing context here is a good idea or if we should create a new one
+            // Context reuse is safe here - it preserves authentication state and session info
+            // which is necessary for the delegated handler to access the authenticated account
             new SetRecoveryAccount().handle(setReq, context);
         } catch (ServiceException e) {
             throw ServiceException.FAILURE("Cannot send the code by email", e);
         }
     }
 
+    /**
+     * Validates a verification code provided by the user.
+     * Delegates to SetRecoveryAccount handler with validateCode operation.
+     *
+     * @param twoFactorCode the verification code to validate
+     * @param context the SOAP context containing authentication and session info
+     * @throws ServiceException if validation fails or code is invalid
+     */
     private void validateCode(String twoFactorCode, Map<String, Object> context) throws ServiceException {
         SetRecoveryAccountRequest setRecoveryAccountRequest = new SetRecoveryAccountRequest();
         setRecoveryAccountRequest.setOp(SetRecoveryAccountRequest.Op.validateCode);
@@ -179,102 +216,196 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
         setReq.addAttribute("isFromEnableTwoFactorAuth", true);
 
         try {
-            // TODO: Check if reusing context here is a good idea or if we should create a new one
+            // Context reuse is safe here - it preserves authentication state and session info
+            // which is necessary for the delegated handler to access the authenticated account
             new SetRecoveryAccount().handle(setReq, context);
         } catch (ServiceException e) {
             throw ServiceException.FAILURE("Cannot validate the code", e);
         }
     }
 
-    private Element handleTwoFactorEnable(Element request, Map<String, Object> context)
-            throws ServiceException {
+    /**
+     * Validates account and checks if 2FA is available and allowed.
+     *
+     * @param request the SOAP request element
+     * @return array containing [Account, ZetaTwoFactorAuth, String accountName]
+     * @throws ServiceException if account doesn't exist or 2FA is not available
+     */
+    private Object[] validateAndGetAccount(Element request) throws ServiceException {
         Provisioning prov = Provisioning.getInstance();
-        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
         String acctNamePassedIn = request.getElement(AccountConstants.E_NAME).getText();
         Account account = prov.get(AccountBy.name, acctNamePassedIn);
+
         if (account == null) {
             throw AuthFailedServiceException.AUTH_FAILED("no such account");
         }
         if (!account.isFeatureTwoFactorAuthAvailable()) {
-            throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
+            throw new TwoFactorAuthRequiredException(
+                acctNamePassedIn,
+                acctNamePassedIn,
+                AccountConstants.E_TWO_FACTOR_METHOD_APP,
+                false
+            );
         }
+
         ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account, acctNamePassedIn);
-
         if (!manager.isAllowedMethod(AccountConstants.E_TWO_FACTOR_METHOD_APP)) {
-            throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
+            throw new TwoFactorSetupException(
+                "App-based 2FA method is not allowed for this account",
+                acctNamePassedIn,
+                acctNamePassedIn,
+                "method authorization check"
+            );
         }
 
-        EnableTwoFactorAuthResponse response = new EnableTwoFactorAuthResponse();
-        Element passwordEl = request.getOptionalElement(AccountConstants.E_PASSWORD);
-        String password = null;
-        if (passwordEl != null) {
-            password = passwordEl.getText();
-        }
-        Element twoFactorCode = request.getOptionalElement(AccountConstants.E_TWO_FACTOR_CODE);
-        if (twoFactorCode == null) {
-            account.authAccount(password, Protocol.soap);
-            if (manager.isEnabledMethod(AccountConstants.E_TWO_FACTOR_METHOD_APP)) {
-                encodeAlreadyEnabled(response);
-            } else {
-                if (!(account.isTwoFactorAuthEnabled())) {
-                    manager.generateCredentials();
-                }
-                response.setSecret(manager.loadSharedSecret());
-                try {
+        return new Object[]{account, manager, acctNamePassedIn};
+    }
+
+    /**
+     * Handles the initial setup phase (generates credentials and returns secret).
+     *
+     * @param account the user account
+     * @param manager the 2FA manager
+     * @param password the user's password for authentication
+     * @param response the response object to populate
+     * @throws ServiceException if setup fails
+     */
+    private void handleInitialSetup(Account account, ZetaTwoFactorAuth manager, String password,
+                                   EnableTwoFactorAuthResponse response) throws ServiceException {
+        account.authAccount(password, Protocol.soap);
+        if (manager.isEnabledMethod(AccountConstants.E_TWO_FACTOR_METHOD_APP)) {
+            encodeAlreadyEnabled(response);
+        } else {
+            if (!account.isTwoFactorAuthEnabled()) {
+                manager.generateCredentials();
+            }
+            response.setSecret(manager.loadSharedSecret());
+            try {
                 String token = AuthProvider.getAuthToken(account, Usage.ENABLE_TWO_FACTOR_AUTH).getEncoded();
                 com.zimbra.soap.account.type.AuthToken at = new com.zimbra.soap.account.type.AuthToken(token, false);
                 response.setAuthToken(at);
-                } catch (AuthTokenException e) {
-                    throw ServiceException.FAILURE("cannot generate auth token", e);
-                }
-            }
-        } else {
-            Element authTokenEl = request.getOptionalElement(AccountConstants.E_AUTH_TOKEN);
-            if (authTokenEl != null) {
-                AuthToken at;
-                try {
-                    at = AuthProvider.getAuthToken(authTokenEl, account);
-                } catch (AuthTokenException e) {
-                    throw AuthFailedServiceException.AUTH_FAILED("invalid auth token");
-                } try {
-                    Account authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.ENABLE_TWO_FACTOR_AUTH);
-                    boolean verifyAccount = authTokenEl.getAttributeBool(AccountConstants.A_VERIFY_ACCOUNT, false);
-                    if (verifyAccount && !authTokenAcct.getId().equalsIgnoreCase(account.getId())) {
-                        throw AuthFailedServiceException.AUTH_FAILED("auth token doesn't match the named account");
-                    }
-                } finally {
-                    if (at != null) {
-                        try {
-                            at.deRegister();
-                        } catch (AuthTokenException e) {
-                            ZimbraLog.account.warn("could not de-register two-factor authentication auth token");
-                        }
-                    }
-                }
-            } else if (password != null) {
-                account.authAccount(password, Protocol.soap);
-            } else {
-                throw AuthFailedServiceException.AUTH_FAILED("auth token and password missing");
-            }
-            manager.authenticateTOTP(twoFactorCode.getText());
-            if (!(account.isTwoFactorAuthEnabled())) {
-                manager.enableTwoFactorAuth();
-            }
-            manager.addEnabledMethod(AccountConstants.E_TWO_FACTOR_METHOD_APP);
-            ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
-            response.setScratchCodes(scratchCodesManager.getCodes());
-            int tokenValidityValue = account.getAuthTokenValidityValue();
-            account.setAuthTokenValidityValue(tokenValidityValue == Integer.MAX_VALUE ? 0 : tokenValidityValue + 1);
-            HttpServletRequest httpReq = (HttpServletRequest)context.get(SoapServlet.SERVLET_REQUEST);
-            HttpServletResponse httpResp = (HttpServletResponse)context.get(SoapServlet.SERVLET_RESPONSE);
-            try {
-                AuthToken at = AuthProvider.getAuthToken(account);
-                response.setAuthToken(new com.zimbra.soap.account.type.AuthToken(at.getEncoded(), false));
-                at.encode(httpResp, false, ZimbraCookie.secureCookie(httpReq), false);
             } catch (AuthTokenException e) {
                 throw ServiceException.FAILURE("cannot generate auth token", e);
             }
         }
+    }
+
+    /**
+     * Authenticates the request using either auth token or password.
+     *
+     * @param request the SOAP request element
+     * @param account the user account
+     * @param password the user's password (may be null)
+     * @throws ServiceException if authentication fails
+     */
+    private void authenticateRequest(Element request, Account account, String password) throws ServiceException {
+        Element authTokenEl = request.getOptionalElement(AccountConstants.E_AUTH_TOKEN);
+        if (authTokenEl != null) {
+            authenticateWithAuthToken(authTokenEl, account);
+        } else if (password != null) {
+            account.authAccount(password, Protocol.soap);
+        } else {
+            throw AuthFailedServiceException.AUTH_FAILED("auth token and password missing");
+        }
+    }
+
+    /**
+     * Authenticates using an auth token from the request.
+     *
+     * @param authTokenEl the auth token element
+     * @param account the user account
+     * @throws ServiceException if token is invalid
+     */
+    private void authenticateWithAuthToken(Element authTokenEl, Account account) throws ServiceException {
+        AuthToken at = null;
+        try {
+            at = AuthProvider.getAuthToken(authTokenEl, account);
+            Provisioning prov = Provisioning.getInstance();
+            Account authTokenAcct = AuthProvider.validateAuthToken(prov, at, false, Usage.ENABLE_TWO_FACTOR_AUTH);
+            boolean verifyAccount = authTokenEl.getAttributeBool(AccountConstants.A_VERIFY_ACCOUNT, false);
+            if (verifyAccount && !authTokenAcct.getId().equalsIgnoreCase(account.getId())) {
+                throw AuthFailedServiceException.AUTH_FAILED("auth token doesn't match the named account");
+            }
+        } catch (AuthTokenException e) {
+            throw AuthFailedServiceException.AUTH_FAILED("invalid auth token");
+        } finally {
+            if (at != null) {
+                try {
+                    at.deRegister();
+                } catch (AuthTokenException e) {
+                    ZimbraLog.account.warn("could not de-register two-factor authentication auth token");
+                }
+            }
+        }
+    }
+
+    /**
+     * Generates and encodes the final auth token for the response.
+     *
+     * @param account the user account
+     * @param context the SOAP context
+     * @param response the response object to populate
+     * @throws ServiceException if token generation fails
+     */
+    private void generateFinalAuthToken(Account account, Map<String, Object> context,
+                                      EnableTwoFactorAuthResponse response) throws ServiceException {
+        HttpServletRequest httpReq = (HttpServletRequest) context.get(SoapServlet.SERVLET_REQUEST);
+        HttpServletResponse httpResp = (HttpServletResponse) context.get(SoapServlet.SERVLET_RESPONSE);
+        try {
+            AuthToken at = AuthProvider.getAuthToken(account);
+            response.setAuthToken(new com.zimbra.soap.account.type.AuthToken(at.getEncoded(), false));
+            at.encode(httpResp, false, ZimbraCookie.secureCookie(httpReq), false);
+        } catch (AuthTokenException e) {
+            throw ServiceException.FAILURE("cannot generate auth token", e);
+        }
+    }
+
+    private Element handleTwoFactorEnable(Element request, Map<String, Object> context)
+            throws ServiceException {
+        ZimbraSoapContext zsc = AccountDocumentHandler.getZimbraSoapContext(context);
+
+        // Validate account and get necessary objects
+        Object[] validation = validateAndGetAccount(request);
+        Account account = (Account) validation[0];
+        ZetaTwoFactorAuth manager = (ZetaTwoFactorAuth) validation[1];
+        String acctNamePassedIn = (String) validation[2];
+
+        EnableTwoFactorAuthResponse response = new EnableTwoFactorAuthResponse();
+
+        // Extract password from request
+        Element passwordEl = request.getOptionalElement(AccountConstants.E_PASSWORD);
+        String password = (passwordEl != null) ? passwordEl.getText() : null;
+
+        // Check if this is initial setup or verification phase
+        Element twoFactorCode = request.getOptionalElement(AccountConstants.E_TWO_FACTOR_CODE);
+
+        if (twoFactorCode == null) {
+            // Initial setup phase: authenticate and generate credentials
+            handleInitialSetup(account, manager, password, response);
+        } else {
+            // Verification phase: verify TOTP code and activate 2FA
+            authenticateRequest(request, account, password);
+            manager.authenticateTOTP(twoFactorCode.getText());
+
+            if (!account.isTwoFactorAuthEnabled()) {
+                manager.enableTwoFactorAuth();
+            }
+            manager.addEnabledMethod(AccountConstants.E_TWO_FACTOR_METHOD_APP);
+
+            // Return scratch codes
+            ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
+            response.setScratchCodes(scratchCodesManager.getCodes());
+
+            // Update token validity
+            int tokenValidityValue = account.getAuthTokenValidityValue();
+            account.setAuthTokenValidityValue(
+                tokenValidityValue == Integer.MAX_VALUE ? 0 : tokenValidityValue + 1
+            );
+
+            // Generate and encode final auth token
+            generateFinalAuthToken(account, context, response);
+        }
+
         return zsc.jaxbToElement(response);
     }
 

@@ -20,80 +20,48 @@
 package com.btactic.twofactorauth.trusteddevices;
 
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.zimbra.common.auth.twofactor.AuthenticatorConfig;
-import com.zimbra.common.auth.twofactor.TwoFactorOptions.CodeLength;
-import com.zimbra.common.auth.twofactor.TwoFactorOptions.HashAlgorithm;
-import com.zimbra.cs.account.auth.twofactor.TwoFactorAuth;
-import com.zimbra.cs.account.auth.twofactor.TwoFactorAuth.CredentialConfig;
 import com.zimbra.cs.account.auth.twofactor.TrustedDevices;
-import com.zimbra.common.auth.twofactor.TwoFactorOptions.Encoding;
-import com.zimbra.common.auth.twofactor.TOTPAuthenticator;
 import com.zimbra.common.service.ServiceException;
 import com.zimbra.common.util.ZimbraLog;
 import com.zimbra.common.util.ZimbraCookie;
 import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.AccountServiceException;
 import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
-import com.btactic.twofactorauth.ZetaTwoFactorAuth;
-import com.btactic.twofactorauth.app.ZetaAppSpecificPassword;
+import com.btactic.twofactorauth.core.BaseTwoFactorAuthComponent;
+import com.btactic.twofactorauth.core.TwoFactorAuthUtils;
 import com.zimbra.cs.account.AuthTokenException;
-import com.zimbra.cs.account.Config;
-import com.zimbra.cs.account.DataSource;
-import com.zimbra.cs.account.Provisioning;
 import com.zimbra.cs.account.TrustedDevice;
 import com.zimbra.cs.account.TrustedDeviceToken;
-import com.zimbra.cs.account.ldap.ChangePasswordListener;
-import com.zimbra.cs.account.ldap.LdapLockoutPolicy;
-import com.zimbra.cs.ldap.LdapDateUtil;
 import com.zimbra.common.soap.AccountConstants;
 import com.zimbra.common.soap.Element;
 import com.zimbra.soap.SoapServlet;
 
 /**
- * This class is the main entry point for two-factor authentication.
+ * Manages trusted devices for two-factor authentication.
+ * Trusted devices can bypass 2FA for a configured period.
  *
  * @author iraykin
  *
  */
-public class ZetaTrustedDevices implements TrustedDevices {
-    private Account account;
-    private String acctNamePassedIn;
-    private String secret;
-    private List<String> scratchCodes;
-    private Encoding encoding;
-    private Encoding scratchEncoding;
-    boolean hasStoredSecret;
-    boolean hasStoredScratchCodes;
-    private Map<String, ZetaAppSpecificPassword> appPasswords = new HashMap<String, ZetaAppSpecificPassword>();
+public class ZetaTrustedDevices extends BaseTwoFactorAuthComponent implements TrustedDevices {
 
     public ZetaTrustedDevices(Account account) throws ServiceException {
         this(account, account.getName());
     }
 
     public ZetaTrustedDevices(Account account, String acctNamePassedIn) throws ServiceException {
-        this.account = account;
-        this.acctNamePassedIn = acctNamePassedIn;
-        ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account, acctNamePassedIn);
-        manager.disableTwoFactorAuthIfNecessary();
+        super(account, acctNamePassedIn);
+        TwoFactorAuthUtils.disableTwoFactorAuthIfNecessary(account);
     }
 
+    @Override
     public void clearData() throws ServiceException {
         revokeAllTrustedDevices();
-    }
-
-    private static String decrypt(Account account, String encrypted) throws ServiceException {
-        return DataSource.decryptData(account.getId(), encrypted);
     }
 
     @Override
@@ -178,7 +146,10 @@ public class ZetaTrustedDevices implements TrustedDevices {
         String encodedToken = null;
         try {
             encodedToken = request.getElement(AccountConstants.E_TRUSTED_TOKEN).getText();
-        } catch (ServiceException e) {}
+        } catch (ServiceException e) {
+            // No trusted token element in request - will check cookies instead
+            ZimbraLog.account.debug("No trusted token element in request, checking cookies", e);
+        }
         if (encodedToken == null) {
             HttpServletRequest req = (HttpServletRequest) context.get(SoapServlet.SERVLET_REQUEST);
             String cookieName = ZimbraCookie.COOKIE_ZM_TRUST_TOKEN;
