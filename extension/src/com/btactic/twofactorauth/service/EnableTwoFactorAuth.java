@@ -40,6 +40,8 @@ import com.zimbra.cs.account.auth.AuthContext.Protocol;
 import com.btactic.twofactorauth.credentials.TOTPCredentials;
 import com.btactic.twofactorauth.ZetaTwoFactorAuth;
 import com.btactic.twofactorauth.ZetaScratchCodes;
+import com.btactic.twofactorauth.exception.TwoFactorAuthRequiredException;
+import com.btactic.twofactorauth.exception.TwoFactorSetupException;
 import com.zimbra.cs.service.AuthProvider;
 import com.zimbra.cs.service.mail.SetRecoveryAccount;
 import com.zimbra.soap.account.message.EnableTwoFactorAuthResponse;
@@ -71,7 +73,7 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
             return handleEmailEnable(request, context);
         }
 
-        throw AuthFailedServiceException.AUTH_FAILED("Unsupported 2FA method");
+        throw new TwoFactorSetupException("Unsupported 2FA method: " + method, "method validation");
     }
 
     private Element handleEmailEnable(Element request, Map<String, Object> context)
@@ -84,12 +86,22 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
             throw AuthFailedServiceException.AUTH_FAILED("no such account");
         }
         if (!account.isFeatureTwoFactorAuthAvailable()) {
-            throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
+            throw new TwoFactorAuthRequiredException(
+                acctNamePassedIn,
+                acctNamePassedIn,
+                AccountConstants.E_TWO_FACTOR_METHOD_EMAIL,
+                false
+            );
         }
         ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account, acctNamePassedIn);
 
         if (!manager.isAllowedMethod(AccountConstants.E_TWO_FACTOR_METHOD_EMAIL)) {
-            throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
+            throw new TwoFactorSetupException(
+                "Email-based 2FA method is not allowed for this account",
+                acctNamePassedIn,
+                acctNamePassedIn,
+                "method authorization check"
+            );
         }
 
         Element passwordEl = request.getOptionalElement(AccountConstants.E_PASSWORD);
@@ -228,12 +240,22 @@ public class EnableTwoFactorAuth extends AccountDocumentHandler {
             throw AuthFailedServiceException.AUTH_FAILED("no such account");
         }
         if (!account.isFeatureTwoFactorAuthAvailable()) {
-            throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
+            throw new TwoFactorAuthRequiredException(
+                acctNamePassedIn,
+                acctNamePassedIn,
+                AccountConstants.E_TWO_FACTOR_METHOD_APP,
+                false
+            );
         }
 
         ZetaTwoFactorAuth manager = new ZetaTwoFactorAuth(account, acctNamePassedIn);
         if (!manager.isAllowedMethod(AccountConstants.E_TWO_FACTOR_METHOD_APP)) {
-            throw ServiceException.CANNOT_ENABLE_TWO_FACTOR_AUTH();
+            throw new TwoFactorSetupException(
+                "App-based 2FA method is not allowed for this account",
+                acctNamePassedIn,
+                acctNamePassedIn,
+                "method authorization check"
+            );
         }
 
         return new Object[]{account, manager, acctNamePassedIn};

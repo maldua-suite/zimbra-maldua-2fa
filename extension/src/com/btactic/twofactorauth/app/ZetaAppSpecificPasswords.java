@@ -32,6 +32,7 @@ import com.zimbra.cs.account.Account;
 import com.zimbra.cs.account.AccountServiceException.AuthFailedServiceException;
 import com.btactic.twofactorauth.core.BaseTwoFactorAuthComponent;
 import com.btactic.twofactorauth.core.TwoFactorAuthUtils;
+import com.btactic.twofactorauth.exception.TwoFactorCodeInvalidException;
 import com.zimbra.cs.account.AppSpecificPassword;
 
 /**
@@ -74,24 +75,36 @@ public class ZetaAppSpecificPasswords extends BaseTwoFactorAuthComponent impleme
     public void authenticate(String providedPassword) throws ServiceException {
         for (AppSpecificPassword appPassword: appPasswords.values())    {
             if (appPassword.validate(providedPassword)) {
-                ZimbraLog.account.debug("logged in with app-specific password");
+                ZimbraLog.account.debug("logged in with app-specific password for account: " + account.getName());
                 appPassword.update();
                 return;
             }
         }
-        throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "invalid app-specific password");
+        ZimbraLog.account.error("invalid app-specific password for account: " + account.getName());
+        throw new TwoFactorCodeInvalidException(
+            account.getName(),
+            acctNamePassedIn,
+            "App-Specific Password",
+            "password does not match any registered app-specific password"
+        );
     }
 
     @Override
     public String getAppNameByPassword(String password) throws ServiceException {
         for (ZetaAppSpecificPassword appPassword: appPasswords.values())    {
             if (appPassword.validate(password)) {
-                ZimbraLog.account.debug("getAppNameByPassword with app-specific password");
+                ZimbraLog.account.debug("getAppNameByPassword with app-specific password for account: " + account.getName());
                 appPassword.update();
                 return (appPassword.getName());
             }
         }
-        throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "invalid app-specific password");
+        ZimbraLog.account.error("invalid app-specific password in getAppNameByPassword for account: " + account.getName());
+        throw new TwoFactorCodeInvalidException(
+            account.getName(),
+            acctNamePassedIn,
+            "App-Specific Password",
+            "password does not match any registered app-specific password"
+        );
     }
 
     @Override

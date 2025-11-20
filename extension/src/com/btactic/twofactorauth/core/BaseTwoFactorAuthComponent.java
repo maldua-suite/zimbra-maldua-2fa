@@ -48,8 +48,12 @@ public abstract class BaseTwoFactorAuthComponent {
      *
      * @param account the account to manage
      * @throws ServiceException if initialization fails
+     * @throws IllegalArgumentException if account is null
      */
     protected BaseTwoFactorAuthComponent(Account account) throws ServiceException {
+        if (account == null) {
+            throw new IllegalArgumentException("Account cannot be null");
+        }
         this(account, account.getName());
     }
 
@@ -59,9 +63,17 @@ public abstract class BaseTwoFactorAuthComponent {
      * @param account the account to manage
      * @param acctNamePassedIn the account name passed in
      * @throws ServiceException if initialization fails
+     * @throws IllegalArgumentException if account is null or acctNamePassedIn is empty
      */
     protected BaseTwoFactorAuthComponent(Account account, String acctNamePassedIn)
             throws ServiceException {
+        if (account == null) {
+            throw new IllegalArgumentException("Account cannot be null");
+        }
+        if (acctNamePassedIn == null || acctNamePassedIn.trim().isEmpty()) {
+            throw new IllegalArgumentException("Account name cannot be null or empty");
+        }
+
         this.account = account;
         this.acctNamePassedIn = acctNamePassedIn;
     }

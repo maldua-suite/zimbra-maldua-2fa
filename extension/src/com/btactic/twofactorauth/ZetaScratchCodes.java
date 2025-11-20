@@ -34,6 +34,7 @@ import com.btactic.twofactorauth.core.BaseTwoFactorAuthComponent;
 import com.btactic.twofactorauth.core.TwoFactorAuthConstants;
 import com.btactic.twofactorauth.core.TwoFactorAuthUtils;
 import com.btactic.twofactorauth.credentials.CredentialGenerator;
+import com.btactic.twofactorauth.exception.TwoFactorCodeInvalidException;
 import com.zimbra.cs.account.ldap.LdapLockoutPolicy;
 import com.zimbra.cs.account.Provisioning;
 
@@ -120,8 +121,13 @@ public class ZetaScratchCodes extends BaseTwoFactorAuthComponent implements Scra
     public void authenticate(String scratchCode) throws ServiceException {
         if (!checkScratchCodes(scratchCode)) {
             failedLogin();
-            ZimbraLog.account.error("invalid scratch code");
-            throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "invalid scratch code");
+            ZimbraLog.account.error("invalid scratch code for account: " + account.getName());
+            throw new TwoFactorCodeInvalidException(
+                account.getName(),
+                acctNamePassedIn,
+                "Scratch",
+                "code not found in valid scratch codes list"
+            );
         }
     }
 
