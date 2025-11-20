@@ -19,7 +19,6 @@
  */
 package com.btactic.twofactorauth.credentials;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,19 +33,26 @@ import com.zimbra.common.auth.twofactor.TwoFactorOptions.Encoding;
 import com.zimbra.common.service.ServiceException;
 
 public class CredentialGenerator {
-    private CredentialConfig config;
+    private final CredentialConfig config;
+    private final SecureRandom secureRandom;
 
     public CredentialGenerator(CredentialConfig config) {
         this.config = config;
+        // Use default SecureRandom implementation (more secure than SHA1PRNG)
+        this.secureRandom = new SecureRandom();
     }
 
-    protected byte[] generateBytes(int n) throws ServiceException {
+    /**
+     * Generates cryptographically secure random bytes.
+     * Uses the default SecureRandom implementation which is more secure
+     * than the deprecated SHA1PRNG algorithm.
+     *
+     * @param n number of bytes to generate
+     * @return array of random bytes
+     */
+    protected byte[] generateBytes(int n) {
         byte[] bytes = new byte[n];
-        try {
-			SecureRandom.getInstance("SHA1PRNG").nextBytes(bytes);
-		} catch (NoSuchAlgorithmException e) {
-			throw ServiceException.FAILURE("error generating random bytes", e);
-		}
+        secureRandom.nextBytes(bytes);
         return bytes;
     }
 
