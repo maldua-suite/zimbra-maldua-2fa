@@ -146,7 +146,10 @@ public class ZetaTrustedDevices extends BaseTwoFactorAuthComponent implements Tr
         String encodedToken = null;
         try {
             encodedToken = request.getElement(AccountConstants.E_TRUSTED_TOKEN).getText();
-        } catch (ServiceException e) {}
+        } catch (ServiceException e) {
+            // No trusted token element in request - will check cookies instead
+            ZimbraLog.account.debug("No trusted token element in request, checking cookies", e);
+        }
         if (encodedToken == null) {
             HttpServletRequest req = (HttpServletRequest) context.get(SoapServlet.SERVLET_REQUEST);
             String cookieName = ZimbraCookie.COOKIE_ZM_TRUST_TOKEN;

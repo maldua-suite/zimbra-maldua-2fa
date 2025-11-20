@@ -153,7 +153,15 @@ public class ZetaTwoFactorAuth extends BaseTwoFactorAuthComponent implements Two
         trustedDevicesManager.clearData();
     }
 
-    /* Determine if a second factor is necessary for authenticating this account */
+    /**
+     * Determines if two-factor authentication is required for this account.
+     * 2FA is required if the feature is available AND either:
+     * - The user has explicitly enabled it, OR
+     * - The admin has made it mandatory for the account
+     *
+     * @return true if 2FA is required for authentication
+     * @throws ServiceException if account attributes cannot be read
+     */
     public boolean twoFactorAuthRequired() throws ServiceException {
         if (!account.isFeatureTwoFactorAuthAvailable()) {
             return false;
@@ -164,7 +172,13 @@ public class ZetaTwoFactorAuth extends BaseTwoFactorAuthComponent implements Two
         }
     }
 
-    /* Determine if two-factor authentication is properly set up */
+    /**
+     * Determines if two-factor authentication is properly configured and set up.
+     * This checks both that 2FA is required AND that credentials have been generated.
+     *
+     * @return true if 2FA is enabled and configured with valid credentials
+     * @throws ServiceException if account attributes cannot be read
+     */
     public boolean twoFactorAuthEnabled() throws ServiceException {
         if (twoFactorAuthRequired()) {
             String secret = account.getTwoFactorAuthSecret();
@@ -346,26 +360,32 @@ public class ZetaTwoFactorAuth extends BaseTwoFactorAuthComponent implements Two
     @Override
     public void authenticate(String code) throws ServiceException {
         if (code == null) {
-            ZimbraLog.account.error("two-factor code missing");
+            ZimbraLog.account.error("2FA authentication failed for account " + account.getName() + ": code missing");
             throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "two-factor code missing");
         }
 
         boolean success = false;
+        String codeType = "unknown";
 
         if (isTOTPCode(code)) {
+          codeType = "TOTP";
           success = checkTOTPCode(code);
         } else if (isEmailCode(code)) {
+          codeType = "Email";
           success = checkEmailCode(code);
         } else if (isScratchCode(code)) {
+          codeType = "Scratch";
           ZetaScratchCodes scratchCodesManager = new ZetaScratchCodes(account);
           success = scratchCodesManager.checkScratchCodes(code);
         }
 
         if (!success) {
             failedLogin();
-            ZimbraLog.account.error("invalid two-factor code");
+            ZimbraLog.account.error("2FA authentication failed for account " + account.getName() + ": invalid " + codeType + " code");
             throw AuthFailedServiceException.TWO_FACTOR_AUTH_FAILED(account.getName(), acctNamePassedIn, "invalid two-factor code");
         }
+
+        ZimbraLog.account.info("2FA authentication successful for account " + account.getName() + " using " + codeType + " code");
     }
 
     @Override
@@ -382,6 +402,7 @@ public class ZetaTwoFactorAuth extends BaseTwoFactorAuthComponent implements Two
 
     @Override
     public void enableTwoFactorAuth() throws ServiceException {
+        ZimbraLog.account.info("Enabling 2FA for account: " + account.getName());
         account.setTwoFactorAuthEnabled(true);
     }
 
@@ -490,6 +511,7 @@ public class ZetaTwoFactorAuth extends BaseTwoFactorAuthComponent implements Two
     }
 
     public void disableTwoFactorAuthApp(boolean deleteCredentials) throws ServiceException {
+        ZimbraLog.account.info("Disabling app-based 2FA for account: " + account.getName());
         checkDisableTwoFactorAuth();
 
         if (account.isTwoFactorAuthEnabled()) {
@@ -499,12 +521,14 @@ public class ZetaTwoFactorAuth extends BaseTwoFactorAuthComponent implements Two
             smartPurgeTwoFactorAuthData();
 
             smartSetPrefPrimaryTwoFactorAuthMethod();
+            ZimbraLog.account.info("Successfully disabled app-based 2FA for account: " + account.getName());
         } else {
-            ZimbraLog.account.info("two-factor authentication already disabled");
+            ZimbraLog.account.info("two-factor authentication already disabled for account: " + account.getName());
         }
     }
 
     public void disableTwoFactorAuthEmail() throws ServiceException {
+        ZimbraLog.account.info("Disabling email-based 2FA for account: " + account.getName());
         checkDisableTwoFactorAuth();
 
         if (account.isTwoFactorAuthEnabled()) {
@@ -516,8 +540,9 @@ public class ZetaTwoFactorAuth extends BaseTwoFactorAuthComponent implements Two
             smartPurgeTwoFactorAuthData();
 
             smartSetPrefPrimaryTwoFactorAuthMethod();
+            ZimbraLog.account.info("Successfully disabled email-based 2FA for account: " + account.getName());
         } else {
-            ZimbraLog.account.info("two-factor authentication already disabled");
+            ZimbraLog.account.info("two-factor authentication already disabled for account: " + account.getName());
         }
     }
 

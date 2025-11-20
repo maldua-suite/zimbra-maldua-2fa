@@ -125,10 +125,23 @@ public class ZetaScratchCodes extends BaseTwoFactorAuthComponent implements Scra
         }
     }
 
+    /**
+     * Checks if the provided scratch code is valid and invalidates it if found.
+     * Uses Iterator for efficient removal to avoid ConcurrentModificationException
+     * and improve performance.
+     *
+     * @param scratchCode the scratch code to validate
+     * @return true if the code was valid and has been invalidated
+     * @throws ServiceException if storage operation fails
+     */
     public boolean checkScratchCodes(String scratchCode) throws ServiceException {
-        for (String code: scratchCodes) {
+        java.util.Iterator<String> iterator = scratchCodes.iterator();
+        while (iterator.hasNext()) {
+            String code = iterator.next();
             if (code.equals(scratchCode)) {
-                invalidateScratchCode(code);
+                iterator.remove(); // O(1) removal using iterator
+                storeCodes(); // Persist the change
+                ZimbraLog.account.info("Scratch code validated and invalidated for account: " + account.getName());
                 return true;
             }
         }
@@ -161,11 +174,6 @@ public class ZetaScratchCodes extends BaseTwoFactorAuthComponent implements Scra
         if (scratchCodes != null) {
             storeScratchCodes(scratchCodes);
         }
-    }
-
-    private void invalidateScratchCode(String code) throws ServiceException {
-        scratchCodes.remove(code);
-        storeCodes();
     }
 
     public void deleteCredentials() throws ServiceException {
